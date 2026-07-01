@@ -1,13 +1,14 @@
 // backend/server.js
 const express = require('express');
 const cors = require('cors');
-const sqlite3 = require('sqlite3').verbose();
+const Database = require('better-sqlite3');
 const { v4: uuidv4 } = require('uuid');
 const twilio = require('twilio');
 require('dotenv').config();
 const path = require('path');
+const fs = require('fs');
 
-// Fix for sqlite3 on Render
+// Fix for better-sqlite3 on Render
 process.env.NODE_ENV = process.env.NODE_ENV || 'production';
 
 const app = express();
@@ -82,79 +83,82 @@ async function sendWhatsAppMessage(phoneNumber, message) {
   }
 }
 
-// Database setup
-const db = new sqlite3.Database('./database/partnerhand.db');
+// Create database folder if it doesn't exist
+if (!fs.existsSync('./database')) {
+  fs.mkdirSync('./database');
+}
 
-// Initialize database tables
-db.serialize(() => {
-  db.run(`
-    CREATE TABLE IF NOT EXISTS partners (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      customer_number TEXT UNIQUE NOT NULL,
-      deposit_slip TEXT NOT NULL,
-      transaction_number TEXT UNIQUE NOT NULL,
-      whatsapp_number TEXT NOT NULL,
-      full_name TEXT,
-      inviter_code TEXT,
-      registration_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-      expiry_date DATETIME NOT NULL,
-      is_active BOOLEAN DEFAULT 1,
-      payment_earned BOOLEAN DEFAULT 0,
-      transaction_approved BOOLEAN DEFAULT 0,
-      transaction_date DATETIME,
-      total_paid INTEGER DEFAULT 0
-    )
-  `);
+// Database setup with better-sqlite3
+const db = new Database('./database/partnerhand.db');
 
-  db.run(`
-    CREATE TABLE IF NOT EXISTS referrals (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      referrer_code TEXT NOT NULL,
-      referred_code TEXT NOT NULL,
-      referral_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (referrer_code) REFERENCES partners(customer_number),
-      FOREIGN KEY (referred_code) REFERENCES partners(customer_number)
-    )
-  `);
+// Initialize database tables (synchronous)
+db.exec(`
+  CREATE TABLE IF NOT EXISTS partners (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    customer_number TEXT UNIQUE NOT NULL,
+    deposit_slip TEXT NOT NULL,
+    transaction_number TEXT UNIQUE NOT NULL,
+    whatsapp_number TEXT NOT NULL,
+    full_name TEXT,
+    inviter_code TEXT,
+    registration_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    expiry_date DATETIME NOT NULL,
+    is_active BOOLEAN DEFAULT 1,
+    payment_earned BOOLEAN DEFAULT 0,
+    transaction_approved BOOLEAN DEFAULT 0,
+    transaction_date DATETIME,
+    total_paid INTEGER DEFAULT 0
+  )
+`);
 
-  db.run(`
-    CREATE TABLE IF NOT EXISTS payments (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      customer_number TEXT NOT NULL,
-      amount INTEGER NOT NULL,
-      payment_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-      status TEXT DEFAULT 'pending',
-      processed_date DATETIME,
-      FOREIGN KEY (customer_number) REFERENCES partners(customer_number)
-    )
-  `);
+db.exec(`
+  CREATE TABLE IF NOT EXISTS referrals (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    referrer_code TEXT NOT NULL,
+    referred_code TEXT NOT NULL,
+    referral_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (referrer_code) REFERENCES partners(customer_number),
+    FOREIGN KEY (referred_code) REFERENCES partners(customer_number)
+  )
+`);
 
-  db.run(`
-    CREATE TABLE IF NOT EXISTS master_links (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      link_code TEXT UNIQUE NOT NULL,
-      created_by TEXT NOT NULL,
-      created_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-      is_active BOOLEAN DEFAULT 1
-    )
-  `);
+db.exec(`
+  CREATE TABLE IF NOT EXISTS payments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    customer_number TEXT NOT NULL,
+    amount INTEGER NOT NULL,
+    payment_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    status TEXT DEFAULT 'pending',
+    processed_date DATETIME,
+    FOREIGN KEY (customer_number) REFERENCES partners(customer_number)
+  )
+`);
 
-  db.run(`
-    CREATE TABLE IF NOT EXISTS pending_approvals (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      transaction_number TEXT UNIQUE NOT NULL,
-      full_name TEXT NOT NULL,
-      referral_code TEXT NOT NULL,
-      whatsapp_number TEXT NOT NULL,
-      submission_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-      status TEXT DEFAULT 'pending',
-      admin_notes TEXT,
-      processed_date DATETIME
-    )
-  `);
+db.exec(`
+  CREATE TABLE IF NOT EXISTS master_links (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    link_code TEXT UNIQUE NOT NULL,
+    created_by TEXT NOT NULL,
+    created_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    is_active BOOLEAN DEFAULT 1
+  )
+`);
 
-  console.log('✅ Database initialized');
-});
+db.exec(`
+  CREATE TABLE IF NOT EXISTS pending_approvals (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    transaction_number TEXT UNIQUE NOT NULL,
+    full_name TEXT NOT NULL,
+    referral_code TEXT NOT NULL,
+    whatsapp_number TEXT NOT NULL,
+    submission_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    status TEXT DEFAULT 'pending',
+    admin_notes TEXT,
+    processed_date DATETIME
+  )
+`);
+
+console.log('✅ Database initialized');
 
 // Helper functions
 function generateCustomerNumber() {
@@ -167,18 +171,14 @@ function generateCustomerNumber() {
 }
 
 function customerNumberExists(customerNumber) {
-  return new Promise((resolve) => {
-    db.get(
-      'SELECT id FROM partners WHERE customer_number = ?',
-      [customerNumber],
-      (err, row) => resolve(!!row)
-    );
-  });
+  const stmt = db.prepare('SELECT id FROM partners WHERE customer_number = ?');
+  const result = stmt.get(customerNumber);
+  return !!result;
 }
 
 async function getUniqueCustomerNumber() {
   let customerNumber = generateCustomerNumber();
-  while (await customerNumberExists(customerNumber)) {
+  while (customerNumberExists(customerNumber)) {
     customerNumber = generateCustomerNumber();
   }
   return customerNumber;
@@ -187,49 +187,25 @@ async function getUniqueCustomerNumber() {
 // Helper: Check and process payouts for a user
 async function checkAndProcessPayouts(customerNumber) {
   try {
-    const countResult = await new Promise((resolve) => {
-      db.get(
-        'SELECT COUNT(*) as count FROM referrals WHERE referrer_code = ?',
-        [customerNumber],
-        (err, row) => resolve(row)
-      );
-    });
-    
+    const stmt1 = db.prepare('SELECT COUNT(*) as count FROM referrals WHERE referrer_code = ?');
+    const countResult = stmt1.get(customerNumber);
     const totalReferrals = countResult.count;
     
-    const paymentsResult = await new Promise((resolve) => {
-      db.get(
-        'SELECT COUNT(*) as count FROM payments WHERE customer_number = ? AND status = "completed"',
-        [customerNumber],
-        (err, row) => resolve(row)
-      );
-    });
-    
+    const stmt2 = db.prepare('SELECT COUNT(*) as count FROM payments WHERE customer_number = ? AND status = "completed"');
+    const paymentsResult = stmt2.get(customerNumber);
     const paymentsMade = paymentsResult.count;
+    
     const expectedPayouts = Math.floor(totalReferrals / 5);
     const pendingPayouts = expectedPayouts - paymentsMade;
     
     if (pendingPayouts > 0) {
       for (let i = 0; i < pendingPayouts; i++) {
-        await new Promise((resolve, reject) => {
-          db.run(
-            `INSERT INTO payments (customer_number, amount, status) VALUES (?, ?, ?)`,
-            [customerNumber, 5000, 'pending'],
-            (err) => {
-              if (err) reject(err);
-              resolve();
-            }
-          );
-        });
+        const insertStmt = db.prepare('INSERT INTO payments (customer_number, amount, status) VALUES (?, ?, ?)');
+        insertStmt.run(customerNumber, 5000, 'pending');
       }
       
-      const partner = await new Promise((resolve) => {
-        db.get(
-          'SELECT whatsapp_number FROM partners WHERE customer_number = ?',
-          [customerNumber],
-          (err, row) => resolve(row)
-        );
-      });
+      const partnerStmt = db.prepare('SELECT whatsapp_number FROM partners WHERE customer_number = ?');
+      const partner = partnerStmt.get(customerNumber);
       
       if (partner) {
         await sendWhatsAppMessage(
@@ -252,18 +228,8 @@ async function checkAndProcessPayouts(customerNumber) {
 app.post('/api/admin/generate-master-link', async (req, res) => {
     try {
         const linkCode = generateCustomerNumber();
-        
-        await new Promise((resolve, reject) => {
-            db.run(
-                `INSERT INTO master_links (link_code, created_by) VALUES (?, ?)`,
-                [linkCode, 'admin'],
-                (err) => {
-                    if (err) reject(err);
-                    resolve();
-                }
-            );
-        });
-        
+        const insertStmt = db.prepare('INSERT INTO master_links (link_code, created_by) VALUES (?, ?)');
+        insertStmt.run(linkCode, 'admin');
         res.json({ success: true, linkCode });
     } catch (error) {
         console.error('Generate master link error:', error);
@@ -275,14 +241,8 @@ app.post('/api/admin/generate-master-link', async (req, res) => {
 app.get('/api/master-link/:code', async (req, res) => {
     try {
         const { code } = req.params;
-        
-        const link = await new Promise((resolve) => {
-            db.get(
-                'SELECT * FROM master_links WHERE link_code = ? AND is_active = 1',
-                [code],
-                (err, row) => resolve(row)
-            );
-        });
+        const stmt = db.prepare('SELECT * FROM master_links WHERE link_code = ? AND is_active = 1');
+        const link = stmt.get(code);
         
         if (!link) {
             return res.status(404).json({ error: 'Invalid or expired referral link' });
@@ -309,30 +269,19 @@ app.post('/api/submit-deposit', async (req, res) => {
             return res.status(400).json({ error: 'Transaction number must be at least 8 digits' });
         }
         
-        const existing = await new Promise((resolve) => {
-            db.get(
-                'SELECT id FROM pending_approvals WHERE transaction_number = ?',
-                [transactionNumber],
-                (err, row) => resolve(row)
-            );
-        });
+        const checkStmt = db.prepare('SELECT id FROM pending_approvals WHERE transaction_number = ?');
+        const existing = checkStmt.get(transactionNumber);
         
         if (existing) {
             return res.status(400).json({ error: 'This transaction number has already been submitted' });
         }
         
-        const result = await new Promise((resolve, reject) => {
-            db.run(
-                `INSERT INTO pending_approvals 
-                 (transaction_number, full_name, referral_code, whatsapp_number) 
-                 VALUES (?, ?, ?, ?)`,
-                [transactionNumber, fullName, referralCode, whatsappNumber],
-                function(err) {
-                    if (err) reject(err);
-                    resolve(this.lastID);
-                }
-            );
-        });
+        const insertStmt = db.prepare(
+            `INSERT INTO pending_approvals 
+             (transaction_number, full_name, referral_code, whatsapp_number) 
+             VALUES (?, ?, ?, ?)`
+        );
+        const result = insertStmt.run(transactionNumber, fullName, referralCode, whatsappNumber);
         
         // Send WhatsApp notification
         await sendWhatsAppMessage(
@@ -343,7 +292,7 @@ app.post('/api/submit-deposit', async (req, res) => {
         res.json({ 
             success: true, 
             message: 'Deposit of RD$1,250 submitted for approval. You will receive a WhatsApp notification once approved.',
-            pendingId: result
+            pendingId: result.lastInsertRowid
         });
         
     } catch (error) {
@@ -355,12 +304,8 @@ app.post('/api/submit-deposit', async (req, res) => {
 // Admin: Get pending approvals
 app.get('/api/admin/pending-approvals', async (req, res) => {
     try {
-        const approvals = await new Promise((resolve) => {
-            db.all(
-                `SELECT * FROM pending_approvals WHERE status = 'pending' ORDER BY submission_date ASC`,
-                (err, rows) => resolve(rows || [])
-            );
-        });
+        const stmt = db.prepare(`SELECT * FROM pending_approvals WHERE status = 'pending' ORDER BY submission_date ASC`);
+        const approvals = stmt.all();
         res.json(approvals);
     } catch (error) {
         res.status(500).json({ error: 'Server error' });
@@ -376,30 +321,19 @@ app.post('/api/admin/process-approval', async (req, res) => {
             return res.status(400).json({ error: 'Missing required fields' });
         }
         
-        const approval = await new Promise((resolve) => {
-            db.get(
-                'SELECT * FROM pending_approvals WHERE id = ?',
-                [approvalId],
-                (err, row) => resolve(row)
-            );
-        });
+        const getStmt = db.prepare('SELECT * FROM pending_approvals WHERE id = ?');
+        const approval = getStmt.get(approvalId);
         
         if (!approval) {
             return res.status(404).json({ error: 'Approval not found' });
         }
         
-        await new Promise((resolve, reject) => {
-            db.run(
-                `UPDATE pending_approvals 
-                 SET status = ?, admin_notes = ?, processed_date = CURRENT_TIMESTAMP 
-                 WHERE id = ?`,
-                [action, adminNotes || null, approvalId],
-                (err) => {
-                    if (err) reject(err);
-                    resolve();
-                }
-            );
-        });
+        const updateStmt = db.prepare(
+            `UPDATE pending_approvals 
+             SET status = ?, admin_notes = ?, processed_date = CURRENT_TIMESTAMP 
+             WHERE id = ?`
+        );
+        updateStmt.run(action, adminNotes || null, approvalId);
         
         if (action === 'approve') {
             const customerNumber = await getUniqueCustomerNumber();
@@ -407,50 +341,35 @@ app.post('/api/admin/process-approval', async (req, res) => {
             const expiryDate = new Date();
             expiryDate.setDate(expiryDate.getDate() + 90);
             
-            await new Promise((resolve, reject) => {
-                db.run(
-                    `INSERT INTO partners 
-                     (customer_number, deposit_slip, transaction_number, whatsapp_number, 
-                      full_name, inviter_code, expiry_date, transaction_approved) 
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-                    [
-                        customerNumber, 
-                        approval.transaction_number, 
-                        approval.transaction_number, 
-                        approval.whatsapp_number,
-                        approval.full_name,
-                        approval.referral_code,
-                        expiryDate.toISOString(),
-                        1
-                    ],
-                    function(err) {
-                        if (err) reject(err);
-                        resolve(this.lastID);
-                    }
-                );
-            });
+            const insertStmt = db.prepare(
+                `INSERT INTO partners 
+                 (customer_number, deposit_slip, transaction_number, whatsapp_number, 
+                  full_name, inviter_code, expiry_date, transaction_approved) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+            );
+            insertStmt.run(
+                customerNumber, 
+                approval.transaction_number, 
+                approval.transaction_number, 
+                approval.whatsapp_number,
+                approval.full_name,
+                approval.referral_code,
+                expiryDate.toISOString(),
+                1
+            );
             
             if (approval.referral_code) {
-                await new Promise((resolve, reject) => {
-                    db.run(
-                        `INSERT INTO referrals (referrer_code, referred_code) VALUES (?, ?)`,
-                        [approval.referral_code, customerNumber],
-                        (err) => {
-                            if (err) reject(err);
-                            resolve();
-                        }
-                    );
-                });
+                const referralStmt = db.prepare(
+                    `INSERT INTO referrals (referrer_code, referred_code) VALUES (?, ?)`
+                );
+                referralStmt.run(approval.referral_code, customerNumber);
                 
                 const payoutResult = await checkAndProcessPayouts(approval.referral_code);
                 
-                const referrer = await new Promise((resolve) => {
-                    db.get(
-                        'SELECT whatsapp_number, customer_number FROM partners WHERE customer_number = ?',
-                        [approval.referral_code],
-                        (err, row) => resolve(row)
-                    );
-                });
+                const referrerStmt = db.prepare(
+                    'SELECT whatsapp_number, customer_number FROM partners WHERE customer_number = ?'
+                );
+                const referrer = referrerStmt.get(approval.referral_code);
                 
                 if (referrer) {
                     let message = `🎯 New referral! ${approval.full_name} has joined under you.`;
@@ -496,13 +415,8 @@ app.post('/api/register', async (req, res) => {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    const existingTransaction = await new Promise((resolve) => {
-      db.get(
-        'SELECT id FROM partners WHERE transaction_number = ?',
-        [transactionNumber],
-        (err, row) => resolve(row)
-      );
-    });
+    const checkStmt = db.prepare('SELECT id FROM partners WHERE transaction_number = ?');
+    const existingTransaction = checkStmt.get(transactionNumber);
 
     if (existingTransaction) {
       return res.status(400).json({ error: 'Transaction number already used' });
@@ -513,53 +427,37 @@ app.post('/api/register', async (req, res) => {
     const expiryDate = new Date();
     expiryDate.setDate(expiryDate.getDate() + 90);
 
-    await new Promise((resolve, reject) => {
-      db.run(
-        `INSERT INTO partners 
-         (customer_number, deposit_slip, transaction_number, whatsapp_number, 
-          inviter_code, expiry_date) 
-         VALUES (?, ?, ?, ?, ?, ?)`,
-        [customerNumber, depositSlip, transactionNumber, whatsappNumber, 
-         inviterCode || null, expiryDate.toISOString()],
-        function(err) {
-          if (err) reject(err);
-          resolve(this.lastID);
-        }
-      );
-    });
+    const insertStmt = db.prepare(
+      `INSERT INTO partners 
+       (customer_number, deposit_slip, transaction_number, whatsapp_number, 
+        inviter_code, expiry_date) 
+       VALUES (?, ?, ?, ?, ?, ?)`
+    );
+    insertStmt.run(
+      customerNumber, 
+      depositSlip, 
+      transactionNumber, 
+      whatsappNumber, 
+      inviterCode || null, 
+      expiryDate.toISOString()
+    );
 
     let referralCount = 0;
 
     if (inviterCode) {
-      const inviterData = await new Promise((resolve) => {
-        db.get(
-          'SELECT * FROM partners WHERE customer_number = ?',
-          [inviterCode],
-          (err, row) => resolve(row)
-        );
-      });
+      const inviterStmt = db.prepare('SELECT * FROM partners WHERE customer_number = ?');
+      const inviterData = inviterStmt.get(inviterCode);
 
       if (inviterData) {
-        await new Promise((resolve, reject) => {
-          db.run(
-            `INSERT INTO referrals (referrer_code, referred_code) VALUES (?, ?)`,
-            [inviterCode, customerNumber],
-            (err) => {
-              if (err) reject(err);
-              resolve();
-            }
-          );
-        });
+        const refStmt = db.prepare(
+          `INSERT INTO referrals (referrer_code, referred_code) VALUES (?, ?)`
+        );
+        refStmt.run(inviterCode, customerNumber);
 
         await checkAndProcessPayouts(inviterCode);
         
-        const countResult = await new Promise((resolve) => {
-          db.get(
-            'SELECT COUNT(*) as count FROM referrals WHERE referrer_code = ?',
-            [inviterCode],
-            (err, row) => resolve(row)
-          );
-        });
+        const countStmt = db.prepare('SELECT COUNT(*) as count FROM referrals WHERE referrer_code = ?');
+        const countResult = countStmt.get(inviterCode);
         referralCount = countResult.count;
       }
     }
@@ -592,41 +490,21 @@ app.post('/api/check-status', async (req, res) => {
       return res.status(400).json({ error: 'Customer number required' });
     }
 
-    const partner = await new Promise((resolve) => {
-      db.get(
-        `SELECT * FROM partners WHERE customer_number = ?`,
-        [customerNumber.toUpperCase()],
-        (err, row) => resolve(row)
-      );
-    });
+    const partnerStmt = db.prepare('SELECT * FROM partners WHERE customer_number = ?');
+    const partner = partnerStmt.get(customerNumber.toUpperCase());
 
     if (!partner) {
       return res.status(404).json({ error: 'Customer number not found' });
     }
 
-    const referralData = await new Promise((resolve) => {
-      db.get(
-        'SELECT COUNT(*) as count FROM referrals WHERE referrer_code = ?',
-        [partner.customer_number],
-        (err, row) => resolve(row)
-      );
-    });
+    const refCountStmt = db.prepare('SELECT COUNT(*) as count FROM referrals WHERE referrer_code = ?');
+    const referralData = refCountStmt.get(partner.customer_number);
 
-    const referrals = await new Promise((resolve) => {
-      db.all(
-        'SELECT referred_code FROM referrals WHERE referrer_code = ?',
-        [partner.customer_number],
-        (err, rows) => resolve(rows || [])
-      );
-    });
+    const referralsStmt = db.prepare('SELECT referred_code FROM referrals WHERE referrer_code = ?');
+    const referrals = referralsStmt.all(partner.customer_number);
 
-    const payments = await new Promise((resolve) => {
-      db.all(
-        'SELECT * FROM payments WHERE customer_number = ? ORDER BY payment_date DESC',
-        [partner.customer_number],
-        (err, rows) => resolve(rows || [])
-      );
-    });
+    const paymentsStmt = db.prepare('SELECT * FROM payments WHERE customer_number = ? ORDER BY payment_date DESC');
+    const payments = paymentsStmt.all(partner.customer_number);
 
     const completedPayments = payments.filter(p => p.status === 'completed');
     const pendingPayments = payments.filter(p => p.status === 'pending');
@@ -669,27 +547,17 @@ app.post('/api/check-status', async (req, res) => {
 // API: Admin stats
 app.get('/api/admin/stats', async (req, res) => {
   try {
-    const totalPartners = await new Promise((resolve) => {
-      db.get('SELECT COUNT(*) as count FROM partners', (err, row) => resolve(row || { count: 0 }));
-    });
+    const partnersStmt = db.prepare('SELECT COUNT(*) as count FROM partners');
+    const totalPartners = partnersStmt.get();
 
-    const totalReferrals = await new Promise((resolve) => {
-      db.get('SELECT COUNT(*) as count FROM referrals', (err, row) => resolve(row || { count: 0 }));
-    });
+    const referralsStmt = db.prepare('SELECT COUNT(*) as count FROM referrals');
+    const totalReferrals = referralsStmt.get();
 
-    const pendingPayments = await new Promise((resolve) => {
-      db.get(
-        'SELECT COUNT(*) as count FROM payments WHERE status = "pending"',
-        (err, row) => resolve(row || { count: 0 })
-      );
-    });
+    const pendingPaymentsStmt = db.prepare('SELECT COUNT(*) as count FROM payments WHERE status = "pending"');
+    const pendingPayments = pendingPaymentsStmt.get();
 
-    const pendingApprovals = await new Promise((resolve) => {
-      db.get(
-        'SELECT COUNT(*) as count FROM pending_approvals WHERE status = "pending"',
-        (err, row) => resolve(row || { count: 0 })
-      );
-    });
+    const pendingApprovalsStmt = db.prepare('SELECT COUNT(*) as count FROM pending_approvals WHERE status = "pending"');
+    const pendingApprovals = pendingApprovalsStmt.get();
 
     res.json({
       totalPartners: totalPartners.count,
@@ -705,16 +573,14 @@ app.get('/api/admin/stats', async (req, res) => {
 // API: Get pending payments
 app.get('/api/admin/pending-payments', async (req, res) => {
   try {
-    const payments = await new Promise((resolve) => {
-      db.all(
-        `SELECT p.*, pa.whatsapp_number, pa.full_name 
-         FROM payments p 
-         JOIN partners pa ON p.customer_number = pa.customer_number 
-         WHERE p.status = 'pending' 
-         ORDER BY p.payment_date ASC`,
-        (err, rows) => resolve(rows || [])
-      );
-    });
+    const stmt = db.prepare(
+      `SELECT p.*, pa.whatsapp_number, pa.full_name 
+       FROM payments p 
+       JOIN partners pa ON p.customer_number = pa.customer_number 
+       WHERE p.status = 'pending' 
+       ORDER BY p.payment_date ASC`
+    );
+    const payments = stmt.all();
     res.json(payments);
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
@@ -730,48 +596,30 @@ app.post('/api/admin/process-payment', async (req, res) => {
       return res.status(400).json({ error: 'Customer number required' });
     }
 
-    const payment = await new Promise((resolve) => {
-      db.get(
-        'SELECT * FROM payments WHERE customer_number = ? AND status = "pending" ORDER BY payment_date ASC LIMIT 1',
-        [customerNumber],
-        (err, row) => resolve(row)
-      );
-    });
+    const paymentStmt = db.prepare(
+      'SELECT * FROM payments WHERE customer_number = ? AND status = "pending" ORDER BY payment_date ASC LIMIT 1'
+    );
+    const payment = paymentStmt.get(customerNumber);
 
     if (!payment) {
       return res.status(404).json({ error: 'No pending payment found' });
     }
 
-    await new Promise((resolve, reject) => {
-      db.run(
-        `UPDATE payments SET status = 'completed', processed_date = CURRENT_TIMESTAMP 
-         WHERE id = ?`,
-        [payment.id],
-        (err) => {
-          if (err) reject(err);
-          resolve();
-        }
-      );
-    });
+    const updateStmt = db.prepare(
+      `UPDATE payments SET status = 'completed', processed_date = CURRENT_TIMESTAMP 
+       WHERE id = ?`
+    );
+    updateStmt.run(payment.id);
 
-    await new Promise((resolve, reject) => {
-      db.run(
-        `UPDATE partners SET total_paid = total_paid + ? WHERE customer_number = ?`,
-        [payment.amount, customerNumber],
-        (err) => {
-          if (err) reject(err);
-          resolve();
-        }
-      );
-    });
+    const totalStmt = db.prepare(
+      `UPDATE partners SET total_paid = total_paid + ? WHERE customer_number = ?`
+    );
+    totalStmt.run(payment.amount, customerNumber);
 
-    const partner = await new Promise((resolve) => {
-      db.get(
-        'SELECT whatsapp_number, full_name FROM partners WHERE customer_number = ?',
-        [customerNumber],
-        (err, row) => resolve(row)
-      );
-    });
+    const partnerStmt = db.prepare(
+      'SELECT whatsapp_number, full_name FROM partners WHERE customer_number = ?'
+    );
+    const partner = partnerStmt.get(customerNumber);
 
     if (partner) {
       await sendWhatsAppMessage(
