@@ -34,7 +34,7 @@ const twilioClient = twilio(
   process.env.TWILIO_AUTH_TOKEN
 );
 
-// Send WhatsApp message via Twilio
+// Send WhatsApp message via Twilio (Bilingual)
 async function sendWhatsAppMessage(phoneNumber, message) {
   try {
     let cleanNumber = phoneNumber.replace(/[^0-9]/g, '');
@@ -232,10 +232,14 @@ async function checkAndProcessPayouts(customerNumber) {
       });
       
       if (partner) {
-        await sendWhatsAppMessage(
-          partner.whatsapp_number,
-          `🎉 Congratulations! You've earned ${pendingPayouts} new payout(s) of RD$5,000 each! Total: RD$${(pendingPayouts * 5000).toLocaleString()}\n\nYou now have ${totalReferrals} referrals. Every 5 referrals = RD$5,000! Payments are processed within 2 working days.`
-        );
+        // Bilingual payout message
+        const message = `🎉 ¡Felicidades! / Congratulations!\n\n` +
+          `🇪🇸 Has ganado ${pendingPayouts} nuevo(s) pago(s) de RD$5,000 cada uno! Total: RD$${(pendingPayouts * 5000).toLocaleString()}\n\n` +
+          `🇺🇸 You've earned ${pendingPayouts} new payout(s) of RD$5,000 each! Total: RD$${(pendingPayouts * 5000).toLocaleString()}\n\n` +
+          `📊 ${totalReferrals} referidos / referrals\n` +
+          `💰 Procesado en 2 días hábiles / Processed within 2 working days`;
+        
+        await sendWhatsAppMessage(partner.whatsapp_number, message);
       }
     }
     
@@ -296,7 +300,7 @@ app.get('/api/master-link/:code', async (req, res) => {
   }
 });
 
-// Submit deposit for approval
+// Submit deposit for approval (Bilingual)
 app.post('/api/submit-deposit', async (req, res) => {
   try {
     const { transactionNumber, fullName, whatsappNumber, referralCode } = req.body;
@@ -329,10 +333,16 @@ app.post('/api/submit-deposit', async (req, res) => {
               return res.status(500).json({ error: 'Server error' });
             }
             
-            await sendWhatsAppMessage(
-              whatsappNumber,
-              `📝 Thank you for your deposit submission!\n\nWe have received your RD$1,250 deposit and it is now pending approval.\n\n⏳ Please allow 24-48 hours for verification.\n\nYou will receive a WhatsApp notification once approved.\n\nThank you for joining Digital Partner Hand! 🎉`
-            );
+            // Bilingual deposit submission message
+            const message = `📝 ¡Gracias por tu depósito! / Thank you for your deposit!\n\n` +
+              `🇪🇸 Hemos recibido tu depósito de RD$1,250 y está pendiente de aprobación.\n\n` +
+              `⏳ Por favor espera 24-48 horas para la verificación.\n\n` +
+              `🇺🇸 We have received your RD$1,250 deposit and it is now pending approval.\n\n` +
+              `⏳ Please allow 24-48 hours for verification.\n\n` +
+              `📱 Recibirás una notificación cuando sea aprobado. / You will receive a notification once approved.\n\n` +
+              `¡Gracias por unirte a Digital Partner Hand! / Thank you for joining Digital Partner Hand! 🎉`;
+            
+            await sendWhatsAppMessage(whatsappNumber, message);
             
             res.json({ 
               success: true, 
@@ -367,7 +377,7 @@ app.get('/api/admin/pending-approvals', async (req, res) => {
   }
 });
 
-// Admin: Approve or reject deposit
+// Admin: Approve or reject deposit (Bilingual)
 app.post('/api/admin/process-approval', async (req, res) => {
   try {
     const { approvalId, action, adminNotes } = req.body;
@@ -439,11 +449,17 @@ app.post('/api/admin/process-approval', async (req, res) => {
                           [approval.referral_code],
                           async (err, referrer) => {
                             if (referrer) {
-                              let message = `🎯 New referral! ${approval.full_name} has joined under you.`;
+                              // Bilingual referral notification
+                              let message = `🎯 ¡Nuevo referido! / New referral!\n\n` +
+                                `🇪🇸 ${approval.full_name} se ha unido bajo tu enlace.\n` +
+                                `🇺🇸 ${approval.full_name} has joined under you.\n\n`;
+                              
                               if (payoutResult) {
-                                message += `\n\n📊 Your Stats:\n• Total Referrals: ${payoutResult.totalReferrals}\n• Payouts Earned: ${payoutResult.paymentsMade}\n• Pending Payouts: ${payoutResult.pendingPayouts}`;
+                                message += `📊 ${payoutResult.totalReferrals} referidos / referrals\n` +
+                                  `💰 Pagos ganados / Payouts Earned: ${payoutResult.paymentsMade}\n` +
+                                  `⏳ Pagos pendientes / Pending Payouts: ${payoutResult.pendingPayouts}`;
                                 if (payoutResult.pendingPayouts > 0) {
-                                  message += `\n💰 RD$${(payoutResult.pendingPayouts * 5000).toLocaleString()} pending (processing within 2 working days)`;
+                                  message += `\n💰 RD$${(payoutResult.pendingPayouts * 5000).toLocaleString()} pendiente (procesado en 2 días hábiles) / pending (processed within 2 working days)`;
                                 }
                               }
                               await sendWhatsAppMessage(referrer.whatsapp_number, message);
@@ -454,11 +470,21 @@ app.post('/api/admin/process-approval', async (req, res) => {
                     );
                   }
                   
-                  const baseUrl = `${req.protocol}://${req.get('host')}`;
-                  await sendWhatsAppMessage(
-                    approval.whatsapp_number,
-                    `🎉 Welcome to Digital Partner Hand!\n\n✅ Your entry fee of RD$1,250 has been approved!\n🔑 Your Customer Number: ${customerNumber}\n🔗 Your Referral Link: ${baseUrl}/join?ref=${customerNumber}\n\n📋 How it works:\n• Share your link with friends\n• Earn RD$5,000 for every 5 referrals\n• Unlimited earnings!\n• Payments processed within 2 working days\n\nStart sharing and earning today! 🚀`
-                  );
+                  const baseUrl = `https://partnerhand-app.onrender.com`;
+                  
+                  // Bilingual welcome message
+                  const welcomeMessage = `🎉 ¡Bienvenido a Digital Partner Hand! / Welcome to Digital Partner Hand!\n\n` +
+                    `✅ Tu entrada de RD$1,250 ha sido aprobada / Your entry fee of RD$1,250 has been approved!\n` +
+                    `🔑 Tu número de cliente / Your Customer Number: ${customerNumber}\n` +
+                    `🔗 Tu enlace de referidos / Your Referral Link: ${baseUrl}/join?ref=${customerNumber}\n\n` +
+                    `📋 Cómo funciona / How it works:\n` +
+                    `• Comparte tu enlace con amigos / Share your link with friends\n` +
+                    `• Gana RD$5,000 por cada 5 referidos / Earn RD$5,000 for every 5 referrals\n` +
+                    `• Ganancias ilimitadas / Unlimited earnings!\n` +
+                    `• Pagos procesados en 2 días hábiles / Payments processed within 2 working days\n\n` +
+                    `¡Empieza a compartir y ganar hoy! / Start sharing and earning today! 🚀`;
+                  
+                  await sendWhatsAppMessage(approval.whatsapp_number, welcomeMessage);
                 }
               );
             }
