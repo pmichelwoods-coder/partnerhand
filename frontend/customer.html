@@ -1,616 +1,314 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digital Partner Hand - Customer</title>
+    <title>Digital Partner Hand - Panel de Cliente</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; }
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-            text-align: center;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .header h1 { font-size: 2em; }
-        .header .subtitle { opacity: 0.9; margin-top: 5px; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
         .card {
             background: white;
-            padding: 25px;
-            border-radius: 12px;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
-        .form-group input {
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+        .input-group input {
             width: 100%;
-            padding: 10px;
-            border: 2px solid #ddd;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 1em;
+            transition: border-color 0.3s;
         }
-        .form-group input:focus { outline: none; border-color: #667eea; }
-        .form-group input:disabled {
-            background: #f8f9fa;
-            color: #667eea;
-            font-weight: 600;
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
         }
-        button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .btn {
+            background: #667eea;
             color: white;
             border: none;
             padding: 12px 30px;
             border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
+            font-size: 1em;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: background 0.3s;
             width: 100%;
         }
-        button:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(102,126,234,0.4); }
-        .success { background: #d4edda; color: #155724; padding: 15px; border-radius: 8px; margin-top: 15px; }
-        .error { background: #f8d7da; color: #721c24; padding: 15px; border-radius: 8px; margin-top: 15px; }
-        .info-box {
-            background: #e7f3ff;
-            padding: 20px;
-            border-radius: 10px;
-            border-left: 5px solid #667eea;
-            margin: 15px 0;
+        .btn:hover {
+            background: #5a67d8;
         }
-        .badge {
+        .btn-success {
+            background: #48bb78;
+        }
+        .btn-success:hover {
+            background: #38a169;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .info-item {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .info-item label {
+            display: block;
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        .info-item .value {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #333;
+        }
+        .status-badge {
             display: inline-block;
             padding: 5px 15px;
             border-radius: 20px;
-            font-size: 14px;
-            font-weight: 600;
-        }
-        .badge-success { background: #28a745; color: white; }
-        .badge-warning { background: #ffc107; color: #333; }
-        .badge-danger { background: #dc3545; color: white; }
-        .badge-info { background: #17a2b8; color: white; }
-        .badge-primary { background: #667eea; color: white; }
-        .progress-bar {
-            width: 100%;
-            height: 25px;
-            background: #e9ecef;
-            border-radius: 12px;
-            overflow: hidden;
-            margin: 10px 0;
-        }
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #28a745, #20c997);
-            border-radius: 12px;
-            transition: width 0.5s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        .referral-list {
-            background: #f8f9fa;
-            padding: 10px;
-            border-radius: 8px;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        .referral-item {
-            padding: 8px 12px;
-            border-bottom: 1px solid #e9ecef;
-            font-family: monospace;
-            font-size: 14px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .referral-item:last-child { border-bottom: none; }
-        .referral-number {
-            background: #667eea;
-            color: white;
-            border-radius: 50%;
-            width: 25px;
-            height: 25px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
             font-weight: bold;
+            font-size: 0.9em;
         }
-        .reward-box {
-            background: linear-gradient(135deg, #ffd700 0%, #ffb700 100%);
-            padding: 20px;
-            border-radius: 12px;
-            text-align: center;
-            margin: 15px 0;
+        .status-active {
+            background: #c6f6d5;
+            color: #22543d;
         }
-        .reward-box h2 { color: #333; font-size: 1.8em; }
-        .reward-box p { color: #555; }
-        .share-btn {
-            background: #25D366;
-            margin-top: 10px;
+        .status-inactive {
+            background: #fed7d7;
+            color: #742a2a;
         }
-        .share-btn:hover { box-shadow: 0 5px 20px rgba(37, 211, 102, 0.4); }
-        .lang-toggle {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-        .lang-btn {
-            padding: 8px 20px;
-            border: 2px solid #667eea;
-            background: white;
-            color: #667eea;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            width: auto;
-        }
-        .lang-btn.active {
-            background: #667eea;
-            color: white;
-        }
-        .lang-btn:hover { transform: none; }
-        .lang-en, .lang-es { display: none; }
-        .lang-en.active, .lang-es.active { display: block; }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 10px;
-            margin: 15px 0;
-        }
-        .stat-mini {
-            background: #f8f9fa;
-            padding: 10px;
-            border-radius: 8px;
-            text-align: center;
-        }
-        .stat-mini .number {
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #667eea;
-        }
-        .stat-mini .label {
-            font-size: 12px;
-            color: #666;
-        }
-        .payment-history {
-            margin-top: 10px;
-        }
-        .payment-history-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 12px;
-            border-bottom: 1px solid #eee;
-            font-size: 14px;
-        }
-        .payment-history-item:last-child { border-bottom: none; }
-        .payment-history-item .status-completed { color: #28a745; font-weight: 600; }
-        .payment-history-item .status-pending { color: #ffc107; font-weight: 600; }
-        .expiry-banner {
-            background: #fff3cd;
+        .referral-link {
+            background: #edf2f7;
             padding: 15px;
-            border-radius: 10px;
-            border-left: 4px solid #ffc107;
-            margin: 10px 0;
-            text-align: center;
-        }
-        .expiry-banner .days {
-            font-size: 2em;
-            font-weight: bold;
-            color: #856404;
-        }
-        .expiry-banner .label {
-            font-size: 14px;
-            color: #856404;
-        }
-        .not-joined-box {
-            background: #e8f5e9;
-            padding: 20px;
-            border-radius: 12px;
-            text-align: center;
-            margin: 15px 0;
-            border: 2px solid #4caf50;
-        }
-        .not-joined-box h3 {
-            color: #2e7d32;
-            margin-bottom: 10px;
-        }
-        .not-joined-box p {
-            color: #555;
-            margin: 5px 0;
-        }
-        .not-joined-box ol {
-            text-align: left;
-            max-width: 300px;
-            margin: 10px auto;
-            padding-left: 20px;
-        }
-        .not-joined-box ol li {
-            margin: 5px 0;
-        }
-        .btn-join {
-            display: inline-block;
-            margin-top: 15px;
-            padding: 12px 30px;
-            background: #28a745;
-            color: white;
-            text-decoration: none;
             border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.3s;
+            word-break: break-all;
+            margin: 10px 0;
+            font-family: monospace;
         }
-        .btn-join:hover {
-            background: #218838;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(40,167,69,0.4);
+        .copy-btn {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .hidden {
+            display: none;
         }
         @media (max-width: 600px) {
-            .container { padding: 10px; }
-            .header h1 { font-size: 1.5em; }
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Language Toggle -->
-        <div class="lang-toggle">
-            <button class="lang-btn active" onclick="switchLanguage('en')">🇬🇧 English</button>
-            <button class="lang-btn" onclick="switchLanguage('es')">🇪🇸 Español</button>
+        <div class="card" style="text-align: center;">
+            <h1>👤 Digital Partner Hand</h1>
+            <p style="color: #666;">Panel de Cliente</p>
         </div>
 
-        <!-- ENGLISH CONTENT -->
-        <div id="lang-en" class="lang-en active">
-            <div class="header">
-                <h1>🤝 Digital Partner Hand</h1>
-                <p class="subtitle">Refer & Earn Rewards Program</p>
-                <p class="subtitle" style="font-size: 0.9em;">Pay RD$1,250 once → Earn RD$5,000 for every 5 referrals!</p>
+        <div class="card" id="loginCard">
+            <h2>🔐 Verificar Tu Estado</h2>
+            <div class="input-group">
+                <label>Número de Cliente</label>
+                <input type="text" id="customerNumber" placeholder="Ingresa tu número de cliente" maxlength="8" style="text-transform: uppercase;">
             </div>
-
-            <div class="card">
-                <h3>🔍 Check Your Status</h3>
-                <div class="form-group">
-                    <label>Your Customer Number</label>
-                    <input type="text" id="customerCheck" placeholder="Enter your customer number">
-                </div>
-                <button onclick="checkStatus()">Check Status</button>
-                <div id="statusResult" style="margin-top: 15px;"></div>
-            </div>
-
-            <div class="card" id="referralInfo" style="display: none;">
-                <h3>📊 Your Referral Progress</h3>
-                <div id="referralDetails"></div>
-            </div>
-
-            <div class="card" id="notJoinedInfo" style="display: none;">
-                <h3>📋 Not Joined Yet?</h3>
-                <div id="notJoinedDetails"></div>
-            </div>
-
-            <div class="card">
-                <h3>📤 Share Your Referral Link</h3>
-                <p style="color: #666; margin-bottom: 10px;">Share your customer number with friends and family!</p>
-                <div class="info-box">
-                    <strong>Your Referral Code:</strong>
-                    <div id="shareCode" style="font-size: 1.5em; font-weight: bold; color: #667eea; margin-top: 5px; word-break: break-all;">Enter your code above</div>
-                </div>
-                <button class="share-btn" onclick="shareReferral()">📱 Share via WhatsApp</button>
-            </div>
+            <button class="btn" onclick="checkStatus()">📊 Verificar Estado</button>
         </div>
 
-        <!-- SPANISH CONTENT -->
-        <div id="lang-es" class="lang-es">
-            <div class="header">
-                <h1>🤝 Digital Partner Hand</h1>
-                <p class="subtitle">Programa de Referidos y Recompensas</p>
-                <p class="subtitle" style="font-size: 0.9em;">Paga RD$1,250 una vez → Gana RD$5,000 por cada 5 referidos!</p>
+        <div class="card hidden" id="dashboardCard">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                <h2>📊 Panel de Control</h2>
+                <button class="btn" onclick="logout()" style="width: auto; padding: 8px 20px; background: #fc8181;">Cerrar Sesión</button>
             </div>
-
-            <div class="card">
-                <h3>🔍 Verifica tu Estado</h3>
-                <div class="form-group">
-                    <label>Tu Número de Cliente</label>
-                    <input type="text" id="customerCheckES" placeholder="Ingresa tu número de cliente">
+            
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>Número de Cliente</label>
+                    <div class="value" id="displayNumber">-</div>
                 </div>
-                <button onclick="checkStatusES()">Verificar Estado</button>
-                <div id="statusResultES" style="margin-top: 15px;"></div>
-            </div>
-
-            <div class="card" id="referralInfoES" style="display: none;">
-                <h3>📊 Tu Progreso de Referidos</h3>
-                <div id="referralDetailsES"></div>
-            </div>
-
-            <div class="card" id="notJoinedInfoES" style="display: none;">
-                <h3>📋 ¿No te has unido aún?</h3>
-                <div id="notJoinedDetailsES"></div>
-            </div>
-
-            <div class="card">
-                <h3>📤 Comparte tu Enlace de Referido</h3>
-                <p style="color: #666; margin-bottom: 10px;">¡Comparte tu número de cliente con amigos y familiares!</p>
-                <div class="info-box">
-                    <strong>Tu Código de Referido:</strong>
-                    <div id="shareCodeES" style="font-size: 1.5em; font-weight: bold; color: #667eea; margin-top: 5px; word-break: break-all;">Ingresa tu código arriba</div>
+                <div class="info-item">
+                    <label>Estado</label>
+                    <div class="value" id="displayStatus">-</div>
                 </div>
-                <button class="share-btn" onclick="shareReferralES()">📱 Compartir por WhatsApp</button>
+                <div class="info-item">
+                    <label>Días Restantes</label>
+                    <div class="value" id="displayDays">-</div>
+                </div>
+                <div class="info-item">
+                    <label>Total Referidos</label>
+                    <div class="value" id="displayReferrals">0</div>
+                </div>
+                <div class="info-item">
+                    <label>Pagos Esperados</label>
+                    <div class="value" id="displayPayouts">0</div>
+                </div>
+                <div class="info-item">
+                    <label>Total Ganado</label>
+                    <div class="value" id="displayEarned">RD$0</div>
+                </div>
+            </div>
+
+            <div style="margin: 20px 0;">
+                <h3>🔗 Tu Enlace de Referidos</h3>
+                <div class="referral-link" id="referralLink">Cargando...</div>
+                <button class="copy-btn" onclick="copyReferralLink()">📋 Copiar Enlace</button>
+            </div>
+
+            <div style="margin: 20px 0;">
+                <h3>📋 Historial de Referidos</h3>
+                <div id="referralHistory">
+                    <p style="color: #666;">Sin referidos aún</p>
+                </div>
+            </div>
+
+            <div style="margin: 20px 0;">
+                <h3>💰 Historial de Pagos</h3>
+                <div id="paymentHistory">
+                    <p style="color: #666;">Sin pagos aún</p>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // ===================== AUTO-FILL FROM URL =====================
-        var urlParams = new URLSearchParams(window.location.search);
-        var customerNumberFromUrl = urlParams.get('ref');
+        const API_URL = window.location.origin;
 
-        if (customerNumberFromUrl) {
-            document.getElementById('customerCheck').value = customerNumberFromUrl;
-            document.getElementById('customerCheckES').value = customerNumberFromUrl;
-            setTimeout(function() {
-                checkStatus();
-            }, 500);
-        }
-
-        // ===================== LANGUAGE SWITCHING =====================
-        function switchLanguage(lang) {
-            var enContent = document.getElementById('lang-en');
-            var esContent = document.getElementById('lang-es');
-            var btns = document.querySelectorAll('.lang-btn');
+        // Check status
+        async function checkStatus() {
+            const customerNumber = document.getElementById('customerNumber').value.trim().toUpperCase();
             
-            if (lang === 'en') {
-                enContent.classList.add('active');
-                esContent.classList.remove('active');
-                btns[0].classList.add('active');
-                btns[1].classList.remove('active');
+            if (!customerNumber) {
+                alert('Por favor ingresa tu número de cliente');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/api/check-status`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ customerNumber })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Número de cliente inválido');
+                }
+
+                const data = await response.json();
+                showDashboard(data);
+                
+            } catch (error) {
+                alert('❌ ' + error.message);
+                console.error('Status check error:', error);
+            }
+        }
+
+        // Show dashboard
+        function showDashboard(data) {
+            document.getElementById('loginCard').classList.add('hidden');
+            document.getElementById('dashboardCard').classList.remove('hidden');
+
+            document.getElementById('displayNumber').textContent = data.customerNumber;
+            
+            // Status
+            const statusEl = document.getElementById('displayStatus');
+            if (data.isActive) {
+                statusEl.innerHTML = '<span class="status-badge status-active">✅ Activo</span>';
             } else {
-                esContent.classList.add('active');
-                enContent.classList.remove('active');
-                btns[1].classList.add('active');
-                btns[0].classList.remove('active');
+                statusEl.innerHTML = '<span class="status-badge status-inactive">❌ Expirado</span>';
+            }
+            
+            document.getElementById('displayDays').textContent = data.daysLeft + ' días';
+            document.getElementById('displayReferrals').textContent = data.referralCount || 0;
+            document.getElementById('displayPayouts').textContent = data.expectedPayouts || 0;
+            document.getElementById('displayEarned').textContent = `RD$${data.totalPaid.toLocaleString() || 0}`;
+
+            // Referral link
+            const link = `${window.location.origin}/join?ref=${data.customerNumber}`;
+            document.getElementById('referralLink').textContent = link;
+
+            // Referral history
+            const historyEl = document.getElementById('referralHistory');
+            if (data.referralsList && data.referralsList.length > 0) {
+                historyEl.innerHTML = data.referralsList.map(ref => 
+                    `<div style="padding: 5px 0; border-bottom: 1px solid #e2e8f0;">🔹 ${ref}</div>`
+                ).join('');
+            } else {
+                historyEl.innerHTML = '<p style="color: #666;">Sin referidos aún</p>';
+            }
+
+            // Payment history
+            const paymentEl = document.getElementById('paymentHistory');
+            if (data.paymentHistory && data.paymentHistory.length > 0) {
+                paymentEl.innerHTML = data.paymentHistory.map(p => 
+                    `<div style="padding: 5px 0; border-bottom: 1px solid #e2e8f0;">
+                        RD$${p.amount.toLocaleString()} - ${p.status} 
+                        <small style="color: #666;">(${new Date(p.payment_date).toLocaleDateString('es-DO')})</small>
+                    </div>`
+                ).join('');
+            } else {
+                paymentEl.innerHTML = '<p style="color: #666;">Sin pagos aún</p>';
             }
         }
 
-        // ===================== CHECK STATUS - ENGLISH =====================
-        function checkStatus() {
-            var customerNumber = document.getElementById('customerCheck').value.trim().toUpperCase();
-            var resultDiv = document.getElementById('statusResult');
-            var infoDiv = document.getElementById('referralInfo');
-            var notJoinedDiv = document.getElementById('notJoinedInfo');
-            var detailsDiv = document.getElementById('referralDetails');
-            var notJoinedDetailsDiv = document.getElementById('notJoinedDetails');
-            var shareCode = document.getElementById('shareCode');
-
-            if (!customerNumber) {
-                resultDiv.innerHTML = '<div class="error">❌ Please enter your customer number</div>';
-                infoDiv.style.display = 'none';
-                notJoinedDiv.style.display = 'none';
-                return;
-            }
-
-            fetch('/api/check-status', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ customerNumber: customerNumber })
-            })
-            .then(function(response) { return response.json(); })
-            .then(function(data) {
-                if (data.customerNumber) {
-                    // Partner found
-                    infoDiv.style.display = 'block';
-                    notJoinedDiv.style.display = 'none';
-                    resultDiv.innerHTML = '';
-
-                    var isActive = data.isActive;
-                    var referrals = data.referralCount || 0;
-                    var target = 5;
-                    var progress = Math.min((referrals / target) * 100, 100);
-                    var remaining = Math.max(target - referrals, 0);
-
-                    var html = '<div style="padding: 10px 0;">';
-                    html += '<p><strong>Customer:</strong> ' + data.customerNumber + '</p>';
-                    if (data.fullName) {
-                        html += '<p><strong>Name:</strong> ' + data.fullName + '</p>';
-                    }
-                    html += '<p><strong>Status:</strong> <span class="badge ' + (isActive ? 'badge-success' : 'badge-danger') + '">' + (isActive ? '✅ Active' : '❌ Expired') + '</span></p>';
-
-                    if (isActive) {
-                        html += '<div class="expiry-banner"><div class="days">' + data.daysLeft + ' days</div><div class="label">⏳ remaining until expiration</div><div style="font-size: 12px; color: #856404; margin-top: 5px;">Expires on: ' + new Date(data.expiryDate).toLocaleDateString() + '</div></div>';
-                    } else {
-                        html += '<div class="expiry-banner" style="background: #f8d7da; border-left-color: #dc3545;"><div class="days" style="color: #721c24;">EXPIRED</div><div class="label" style="color: #721c24;">Your account has expired</div><div style="font-size: 12px; color: #721c24; margin-top: 5px;">Expired on: ' + new Date(data.expiryDate).toLocaleDateString() + '</div></div>';
-                    }
-
-                    html += '<p><strong>Registered:</strong> ' + new Date(data.registrationDate).toLocaleDateString() + '</p>';
-                    html += '<p><strong>WhatsApp:</strong> ' + data.whatsappNumber + '</p>';
-                    html += '<hr style="margin: 15px 0;">';
-                    html += '<p><strong>Referrals:</strong> ' + referrals + ' / ' + target + '</p>';
-                    html += '<div class="progress-bar"><div class="progress-fill" style="width: ' + progress + '%;">' + Math.round(progress) + '%</div></div>';
-                    if (remaining > 0) {
-                        html += '<p style="color: #666;">' + remaining + ' more referral' + (remaining > 1 ? 's' : '') + ' needed to earn RD$5,000!</p>';
-                    }
-
-                    // Referrals List
-                    if (data.referralsList && data.referralsList.length > 0) {
-                        html += '<p><strong>Your Referrals:</strong></p><div class="referral-list">';
-                        data.referralsList.forEach(function(ref, index) {
-                            html += '<div class="referral-item"><span><span class="referral-number">' + (index + 1) + '</span> ' + ref + '</span><span class="badge badge-success">✅</span></div>';
-                        });
-                        html += '</div>';
-                    } else {
-                        html += '<p style="color: #666;">No referrals yet. Share your code to start earning!</p>';
-                    }
-
-                    html += '</div>';
-                    detailsDiv.innerHTML = html;
-
-                    // Update share code
-                    shareCode.textContent = customerNumber;
-                    document.getElementById('shareCodeES').textContent = customerNumber;
-
-                } else {
-                    // Partner not found
-                    infoDiv.style.display = 'none';
-                    notJoinedDiv.style.display = 'block';
-                    resultDiv.innerHTML = '';
-
-                    var notJoinedHtml = '<div class="not-joined-box"><h3>👋 Not a member yet?</h3><p>You haven\'t joined Digital Partner Hand yet.</p><p style="margin-top: 10px;">To join:</p><ol><li>Pay RD$1,250 to BanReservas</li><li>Fill out the registration form</li><li>Get approved and start earning!</li></ol>';
-
-                    if (customerNumberFromUrl) {
-                        notJoinedHtml += '<div style="margin-top: 15px; padding: 15px; background: #fff3cd; border-radius: 8px;"><p style="color: #856404;">🔗 You were referred by: <strong>' + customerNumberFromUrl + '</strong></p><p style="color: #856404; font-size: 14px; margin-top: 5px;">Complete your registration to start earning!</p></div>';
-                    }
-
-                    notJoinedHtml += '<a href="/join?ref=' + (customerNumberFromUrl || '') + '" class="btn-join">🚀 Join Now</a></div>';
-                    notJoinedDetailsDiv.innerHTML = notJoinedHtml;
-                }
-            })
-            .catch(function(error) {
-                resultDiv.innerHTML = '<div class="error">❌ Error: ' + error.message + '</div>';
-                infoDiv.style.display = 'none';
-                notJoinedDiv.style.display = 'none';
+        // Copy referral link
+        function copyReferralLink() {
+            const link = document.getElementById('referralLink').textContent;
+            navigator.clipboard.writeText(link).then(() => {
+                alert('📋 Enlace copiado al portapapeles!');
             });
         }
 
-        // ===================== CHECK STATUS - SPANISH =====================
-        function checkStatusES() {
-            var customerNumber = document.getElementById('customerCheckES').value.trim().toUpperCase();
-            var resultDiv = document.getElementById('statusResultES');
-            var infoDiv = document.getElementById('referralInfoES');
-            var notJoinedDiv = document.getElementById('notJoinedInfoES');
-            var detailsDiv = document.getElementById('referralDetailsES');
-            var notJoinedDetailsDiv = document.getElementById('notJoinedDetailsES');
-
-            if (!customerNumber) {
-                resultDiv.innerHTML = '<div class="error">❌ Por favor ingresa tu número de cliente</div>';
-                infoDiv.style.display = 'none';
-                notJoinedDiv.style.display = 'none';
-                return;
-            }
-
-            fetch('/api/check-status', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ customerNumber: customerNumber })
-            })
-            .then(function(response) { return response.json(); })
-            .then(function(data) {
-                if (data.customerNumber) {
-                    infoDiv.style.display = 'block';
-                    notJoinedDiv.style.display = 'none';
-                    resultDiv.innerHTML = '';
-
-                    var isActive = data.isActive;
-                    var referrals = data.referralCount || 0;
-                    var target = 5;
-                    var progress = Math.min((referrals / target) * 100, 100);
-                    var remaining = Math.max(target - referrals, 0);
-
-                    var html = '<div style="padding: 10px 0;">';
-                    html += '<p><strong>Cliente:</strong> ' + data.customerNumber + '</p>';
-                    if (data.fullName) {
-                        html += '<p><strong>Nombre:</strong> ' + data.fullName + '</p>';
-                    }
-                    html += '<p><strong>Estado:</strong> <span class="badge ' + (isActive ? 'badge-success' : 'badge-danger') + '">' + (isActive ? '✅ Activo' : '❌ Expirado') + '</span></p>';
-
-                    if (isActive) {
-                        html += '<div class="expiry-banner"><div class="days">' + data.daysLeft + ' días</div><div class="label">⏳ restantes hasta la expiración</div><div style="font-size: 12px; color: #856404; margin-top: 5px;">Expira el: ' + new Date(data.expiryDate).toLocaleDateString() + '</div></div>';
-                    } else {
-                        html += '<div class="expiry-banner" style="background: #f8d7da; border-left-color: #dc3545;"><div class="days" style="color: #721c24;">EXPIRADO</div><div class="label" style="color: #721c24;">Tu cuenta ha expirado</div><div style="font-size: 12px; color: #721c24; margin-top: 5px;">Expiró el: ' + new Date(data.expiryDate).toLocaleDateString() + '</div></div>';
-                    }
-
-                    html += '<p><strong>Registrado:</strong> ' + new Date(data.registrationDate).toLocaleDateString() + '</p>';
-                    html += '<p><strong>WhatsApp:</strong> ' + data.whatsappNumber + '</p>';
-                    html += '<hr style="margin: 15px 0;">';
-                    html += '<p><strong>Referidos:</strong> ' + referrals + ' / ' + target + '</p>';
-                    html += '<div class="progress-bar"><div class="progress-fill" style="width: ' + progress + '%;">' + Math.round(progress) + '%</div></div>';
-                    if (remaining > 0) {
-                        html += '<p style="color: #666;">¡' + remaining + ' referido' + (remaining > 1 ? 's' : '') + ' más para ganar RD$5,000!</p>';
-                    }
-
-                    if (data.referralsList && data.referralsList.length > 0) {
-                        html += '<p><strong>Tus Referidos:</strong></p><div class="referral-list">';
-                        data.referralsList.forEach(function(ref, index) {
-                            html += '<div class="referral-item"><span><span class="referral-number">' + (index + 1) + '</span> ' + ref + '</span><span class="badge badge-success">✅</span></div>';
-                        });
-                        html += '</div>';
-                    } else {
-                        html += '<p style="color: #666;">Aún no tienes referidos. ¡Comparte tu código para empezar a ganar!</p>';
-                    }
-
-                    html += '</div>';
-                    detailsDiv.innerHTML = html;
-                    resultDiv.innerHTML = '';
-
-                } else {
-                    infoDiv.style.display = 'none';
-                    notJoinedDiv.style.display = 'block';
-                    resultDiv.innerHTML = '';
-
-                    var notJoinedHtml = '<div class="not-joined-box"><h3>👋 ¿No eres miembro aún?</h3><p>Todavía no te has unido a Digital Partner Hand.</p><p style="margin-top: 10px;">Para unirte:</p><ol><li>Paga RD$1,250 a BanReservas</li><li>Llena el formulario de registro</li><li>¡Recibe aprobación y comienza a ganar!</li></ol>';
-
-                    if (customerNumberFromUrl) {
-                        notJoinedHtml += '<div style="margin-top: 15px; padding: 15px; background: #fff3cd; border-radius: 8px;"><p style="color: #856404;">🔗 Fuiste referido por: <strong>' + customerNumberFromUrl + '</strong></p><p style="color: #856404; font-size: 14px; margin-top: 5px;">¡Completa tu registro para empezar a ganar!</p></div>';
-                    }
-
-                    notJoinedHtml += '<a href="/join?ref=' + (customerNumberFromUrl || '') + '" class="btn-join">🚀 Unirme Ahora</a></div>';
-                    notJoinedDetailsDiv.innerHTML = notJoinedHtml;
-                }
-            })
-            .catch(function(error) {
-                resultDiv.innerHTML = '<div class="error">❌ Error: ' + error.message + '</div>';
-                infoDiv.style.display = 'none';
-                notJoinedDiv.style.display = 'none';
-            });
+        // Logout
+        function logout() {
+            document.getElementById('loginCard').classList.remove('hidden');
+            document.getElementById('dashboardCard').classList.add('hidden');
+            document.getElementById('customerNumber').value = '';
         }
 
-        // ===================== SHARE FUNCTIONS =====================
-        function shareReferral() {
-            var code = document.getElementById('shareCode').textContent;
-            if (!code || code === 'Enter your code above') {
-                alert('Please check your status first to get your referral code!');
-                return;
-            }
-            var message = '🎯 Join Digital Partner Hand using my referral code: ' + code + '\n\n💰 Pay RD$1,250 once\n🎉 Earn RD$5,000 for every 5 referrals!\n📅 Valid for 3 months\n♾️ Unlimited earnings!\n\nJoin now and start earning! 🚀';
-            var url = 'https://wa.me/?text=' + encodeURIComponent(message);
-            window.open(url, '_blank');
-        }
-
-        function shareReferralES() {
-            var code = document.getElementById('shareCodeES').textContent;
-            if (!code || code === 'Ingresa tu código arriba') {
-                alert('¡Primero verifica tu estado para obtener tu código de referido!');
-                return;
-            }
-            var message = '🎯 Únete a Digital Partner Hand usando mi código de referido: ' + code + '\n\n💰 Paga RD$1,250 una vez\n🎉 Gana RD$5,000 por cada 5 referidos!\n📅 Válido por 3 meses\n♾️ Ganancias ilimitadas!\n\n¡Únete ahora y comienza a ganar! 🚀';
-            var url = 'https://wa.me/?text=' + encodeURIComponent(message);
-            window.open(url, '_blank');
-        }
-
-        // ===================== ENTER KEY SUPPORT =====================
-        document.getElementById('customerCheck').addEventListener('keypress', function(e) {
+        // Enter key support
+        document.getElementById('customerNumber').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 checkStatus();
             }
-        });
-
-        document.getElementById('customerCheckES').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                checkStatusES();
-            }
-        });
-
-        // ===================== SYNC FIELDS =====================
-        document.getElementById('customerCheck').addEventListener('input', function() {
-            document.getElementById('customerCheckES').value = this.value;
-        });
-        document.getElementById('customerCheckES').addEventListener('input', function() {
-            document.getElementById('customerCheck').value = this.value;
         });
     </script>
 </body>
