@@ -1,620 +1,399 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digital Partner Hand - Admin</title>
+    <title>Digital Partner Hand - Administrador</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; }
-        .header {
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            background: white;
             padding: 30px;
             border-radius: 15px;
             margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
         }
-        .header h1 { font-size: 2em; }
-        .header a { color: white; text-decoration: underline; }
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .stat-card h3 {
+            color: #666;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .stat-card .number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin-top: 10px;
+        }
         .card {
             background: white;
             padding: 25px;
-            border-radius: 12px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
-        .form-group input {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
         }
-        .form-group input:focus { outline: none; border-color: #667eea; }
-        button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .btn {
+            background: #667eea;
             color: white;
             border: none;
             padding: 12px 30px;
             border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
+            font-size: 1em;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: background 0.3s;
         }
-        button:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(102,126,234,0.4); }
+        .btn:hover {
+            background: #5a67d8;
+        }
         .btn-success {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            background: #48bb78;
         }
-        .btn-success:hover { box-shadow: 0 5px 20px rgba(40,167,69,0.4); }
+        .btn-success:hover {
+            background: #38a169;
+        }
         .btn-danger {
-            background: linear-gradient(135deg, #dc3545 0%, #e74c3c 100%);
+            background: #fc8181;
         }
-        .btn-danger:hover { box-shadow: 0 5px 20px rgba(220,53,69,0.4); }
-        .btn-warning {
-            background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+        .btn-danger:hover {
+            background: #f56565;
         }
-        .btn-warning:hover { box-shadow: 0 5px 20px rgba(255,193,7,0.4); }
-        .success { background: #d4edda; color: #155724; padding: 15px; border-radius: 8px; margin-top: 15px; }
-        .error { background: #f8d7da; color: #721c24; padding: 15px; border-radius: 8px; margin-top: 15px; }
-        .customer-number { font-size: 2em; font-weight: bold; color: #667eea; padding: 15px; border: 2px dashed #667eea; border-radius: 10px; text-align: center; margin: 10px 0; }
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        .stat-box {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            text-align: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .stat-number { font-size: 2em; font-weight: bold; color: #667eea; }
-        .stat-label { color: #666; margin-top: 5px; }
-        .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-        .badge-success { background: #28a745; color: white; }
-        .badge-warning { background: #ffc107; color: #333; }
-        .badge-danger { background: #dc3545; color: white; }
-        .badge-info { background: #17a2b8; color: white; }
-        .payment-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 15px;
-            border-bottom: 1px solid #eee;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .payment-item:last-child { border-bottom: none; }
-        .payment-info { flex: 1; min-width: 200px; }
-        .payment-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-        .payment-actions button { padding: 6px 15px; font-size: 14px; }
-        .status-pending { color: #ffc107; font-weight: 600; }
-        .status-completed { color: #28a745; font-weight: 600; }
-        .referral-list { 
-            background: #f8f9fa; 
-            padding: 10px; 
-            border-radius: 8px;
-            max-height: 150px;
-            overflow-y: auto;
-        }
-        .referral-item {
-            padding: 5px 10px;
-            border-bottom: 1px solid #e9ecef;
-            font-family: monospace;
-            font-size: 14px;
-        }
-        .approval-item {
-            border: 2px solid #ffc107;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 15px;
-            background: #fffef5;
-        }
-        .approval-item .header-row {
+        .pending-item {
+            border-bottom: 1px solid #e2e8f0;
+            padding: 15px 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 10px;
         }
-        .approval-item .details {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
-            margin: 10px 0;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 8px;
+        .pending-item:last-child {
+            border-bottom: none;
         }
-        .approval-item .details span {
-            font-size: 14px;
+        .pending-info {
+            flex: 1;
+            min-width: 200px;
         }
-        .approval-item .details strong {
+        .pending-info strong {
+            display: block;
             color: #333;
         }
-        .approval-actions {
+        .pending-info small {
+            color: #666;
+        }
+        .pending-actions {
             display: flex;
             gap: 10px;
-            flex-wrap: wrap;
             margin-top: 10px;
         }
-        .approval-actions button {
-            flex: 1;
-            min-width: 100px;
-        }
-        .admin-note-input {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
+        .pending-actions button {
+            padding: 8px 20px;
+            border: none;
             border-radius: 5px;
-            font-size: 14px;
-            margin-top: 10px;
+            cursor: pointer;
+            font-weight: bold;
         }
-        .master-link-box {
-            background: #f8f9fa;
+        .approve-btn {
+            background: #48bb78;
+            color: white;
+        }
+        .reject-btn {
+            background: #fc8181;
+            color: white;
+        }
+        .link-code {
+            background: #f7fafc;
             padding: 15px;
             border-radius: 8px;
+            font-family: monospace;
+            font-size: 1.2em;
             margin: 10px 0;
-            border: 2px dashed #667eea;
-        }
-        .master-link-box .link {
-            font-size: 1.1em;
-            color: #667eea;
             word-break: break-all;
-            font-weight: 600;
-            padding: 10px;
-            background: white;
-            border-radius: 5px;
-            margin: 10px 0;
         }
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+        .copy-btn {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .copy-btn:hover {
+            background: #3182ce;
         }
         @media (max-width: 768px) {
-            .grid-2 { grid-template-columns: 1fr; }
-            .payment-item { flex-direction: column; align-items: stretch; }
-            .payment-actions { justify-content: center; }
+            .pending-item {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .pending-actions {
+                margin-top: 10px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🤝 Digital Partner Hand</h1>
-            <p>Administrator Dashboard</p>
-            <a href="/customer">View Customer Page →</a>
+            <h1>🏢 Digital Partner Hand</h1>
+            <p>Panel de Administración</p>
         </div>
 
-        <!-- Stats -->
-        <div class="stats" id="stats">
-            <div class="stat-box">
-                <div class="stat-number" id="totalPartners">0</div>
-                <div class="stat-label">Total Partners</div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Socios</h3>
+                <div class="number" id="totalPartners">0</div>
             </div>
-            <div class="stat-box">
-                <div class="stat-number" id="totalReferrals">0</div>
-                <div class="stat-label">Total Referrals</div>
+            <div class="stat-card">
+                <h3>Total Referidos</h3>
+                <div class="number" id="totalReferrals">0</div>
             </div>
-            <div class="stat-box">
-                <div class="stat-number" id="pendingPayments">0</div>
-                <div class="stat-label">Pending Payments</div>
+            <div class="stat-card">
+                <h3>Aprobaciones Pendientes</h3>
+                <div class="number" id="pendingApprovals">0</div>
             </div>
-            <div class="stat-box">
-                <div class="stat-number" id="pendingApprovals">0</div>
-                <div class="stat-label">Pending Approvals</div>
-            </div>
-        </div>
-
-        <div class="grid-2">
-            <!-- Master Link Generator -->
-            <div class="card">
-                <h3>🔗 Generate Master Referral Link</h3>
-                <p style="color: #666; margin-bottom: 15px;">This link never expires and does not count toward payouts.</p>
-                <button onclick="generateMasterLink()" style="width: 100%;">Generate New Master Link</button>
-                <div id="masterLinkResult" style="margin-top: 15px;">
-                    <div class="master-link-box">
-                        <p><strong>Your Master Referral Link:</strong></p>
-                        <div id="masterLinkDisplay" class="link">No link generated yet</div>
-                        <button onclick="copyMasterLink()" class="btn-success" style="width: 100%;">📋 Copy Link</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Quick Register (Legacy) -->
-            <div class="card">
-                <h3>📝 Quick Register Partner</h3>
-                <p style="color: #666; font-size: 14px; margin-bottom: 10px;">For manual registration (deposit already approved)</p>
-                <form id="registerForm">
-                    <div class="form-group">
-                        <label>Deposit Slip Number</label>
-                        <input type="text" id="depositSlip" placeholder="Enter deposit slip number" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Transaction Number (Unique)</label>
-                        <input type="text" id="transactionNumber" placeholder="Enter unique transaction number" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Inviter's Customer Number (Optional)</label>
-                        <input type="text" id="inviterCode" placeholder="Enter inviter's customer number">
-                    </div>
-                    <div class="form-group">
-                        <label>WhatsApp Number</label>
-                        <input type="tel" id="whatsappNumber" placeholder="e.g., 8299394470" required>
-                    </div>
-                    <button type="submit">Register Partner</button>
-                </form>
-                <div id="result"></div>
+            <div class="stat-card">
+                <h3>Pagos Pendientes</h3>
+                <div class="number" id="pendingPayments">0</div>
             </div>
         </div>
 
-        <!-- Pending Approvals -->
         <div class="card">
-            <h3>⏳ Pending Deposit Approvals</h3>
-            <p style="color: #666; font-size: 14px; margin-bottom: 10px;">Entry fee: RD$1,250 | Review and approve deposits</p>
+            <h2>🔗 Generar Enlace Maestro de Referidos</h2>
+            <p style="color: #666; margin-bottom: 15px;">Crea un enlace maestro que los nuevos usuarios pueden usar para unirse</p>
+            <button class="btn" onclick="generateMasterLink()">Generar Nuevo Enlace</button>
+            <div id="masterLinkResult" style="margin-top: 15px; display: none;">
+                <div class="link-code" id="masterLinkCode"></div>
+                <button class="copy-btn" onclick="copyMasterLink()">📋 Copiar Enlace</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📋 Aprobaciones Pendientes</h2>
             <div id="pendingApprovalsList">
-                <p style="color: #666; text-align: center; padding: 20px;">Loading...</p>
+                <p style="color: #666;">Cargando aprobaciones pendientes...</p>
             </div>
         </div>
 
-        <!-- Pending Payments -->
         <div class="card">
-            <h3>💰 Pending Payments</h3>
-            <p style="color: #666; font-size: 14px; margin-bottom: 10px;">RD$5,000 for every 5 referrals | Process within 2 working days</p>
+            <h2>💰 Pagos Pendientes</h2>
             <div id="pendingPaymentsList">
-                <p style="color: #666; text-align: center; padding: 20px;">Loading...</p>
+                <p style="color: #666;">Cargando pagos pendientes...</p>
             </div>
-        </div>
-
-        <!-- Search Partner -->
-        <div class="card">
-            <h3>🔍 Search Partner</h3>
-            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <input type="text" id="searchCustomer" placeholder="Enter customer number" style="flex: 1; min-width: 200px;">
-                <button onclick="searchPartner()">Search</button>
-            </div>
-            <div id="searchResult" style="margin-top: 15px;"></div>
         </div>
     </div>
 
     <script>
-        // ===================== MASTER LINK FUNCTIONS =====================
+        const API_URL = window.location.origin;
 
-        // Generate Master Referral Link
-        async function generateMasterLink() {
-            try {
-                const response = await fetch('/api/admin/generate-master-link', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok) {
-                    const link = `${window.location.origin}/join?ref=${data.linkCode}`;
-                    document.getElementById('masterLinkDisplay').textContent = link;
-                    alert('✅ Master referral link generated successfully!');
-                } else {
-                    alert('❌ Error: ' + (data.error || 'Failed to generate link'));
-                }
-            } catch (error) {
-                alert('❌ Error: ' + error.message);
-            }
+        // Load all data
+        async function loadDashboard() {
+            await loadStats();
+            await loadPendingApprovals();
+            await loadPendingPayments();
         }
-
-        // Copy Master Link
-        function copyMasterLink() {
-            const link = document.getElementById('masterLinkDisplay').textContent;
-            if (link && link !== 'No link generated yet') {
-                navigator.clipboard.writeText(link).then(() => {
-                    alert('✅ Link copied to clipboard!');
-                }).catch(() => {
-                    // Fallback
-                    const textarea = document.createElement('textarea');
-                    textarea.value = link;
-                    document.body.appendChild(textarea);
-                    textarea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textarea);
-                    alert('✅ Link copied to clipboard!');
-                });
-            } else {
-                alert('Please generate a link first!');
-            }
-        }
-
-        // ===================== STATS FUNCTIONS =====================
 
         // Load stats
         async function loadStats() {
             try {
-                const response = await fetch('/api/admin/stats');
+                const response = await fetch(`${API_URL}/api/admin/stats`);
                 const data = await response.json();
                 document.getElementById('totalPartners').textContent = data.totalPartners || 0;
                 document.getElementById('totalReferrals').textContent = data.totalReferrals || 0;
-                document.getElementById('pendingPayments').textContent = data.pendingPayments || 0;
                 document.getElementById('pendingApprovals').textContent = data.pendingApprovals || 0;
+                document.getElementById('pendingPayments').textContent = data.pendingPayments || 0;
             } catch (error) {
                 console.error('Error loading stats:', error);
             }
         }
 
-        // ===================== PENDING APPROVALS FUNCTIONS =====================
-
         // Load pending approvals
         async function loadPendingApprovals() {
             try {
-                const response = await fetch('/api/admin/pending-approvals');
-                const approvals = await response.json();
+                const response = await fetch(`${API_URL}/api/admin/pending-approvals`);
+                const data = await response.json();
                 const container = document.getElementById('pendingApprovalsList');
                 
-                if (!approvals || approvals.length === 0) {
-                    container.innerHTML = '<p style="color: #666; text-align: center; padding: 20px;">✅ No pending approvals</p>';
+                if (data.length === 0) {
+                    container.innerHTML = '<p style="color: #48bb78;">✅ No hay aprobaciones pendientes</p>';
                     return;
                 }
-                
-                container.innerHTML = approvals.map(a => `
-                    <div class="approval-item">
-                        <div class="header-row">
-                            <div>
-                                <strong style="font-size: 1.1em;">${a.full_name}</strong>
-                                <span class="badge badge-warning" style="margin-left: 10px;">Pending</span>
-                            </div>
-                            <div style="font-size: 14px; color: #666;">
-                                📱 ${a.whatsapp_number}
-                            </div>
+
+                container.innerHTML = data.map(item => `
+                    <div class="pending-item">
+                        <div class="pending-info">
+                            <strong>${item.full_name}</strong>
+                            <small>Transacción: ${item.transaction_number}</small>
+                            <small>WhatsApp: ${item.whatsapp_number}</small>
+                            <small>Código de Referido: ${item.referral_code || 'Ninguno'}</small>
+                            <small>Enviado: ${new Date(item.submission_date).toLocaleDateString('es-DO')}</small>
                         </div>
-                        <div class="details">
-                            <span><strong>Transaction:</strong> ${a.transaction_number}</span>
-                            <span><strong>Referral Code:</strong> ${a.referral_code}</span>
-                            <span><strong>Submitted:</strong> ${new Date(a.submission_date).toLocaleString()}</span>
-                            <span><strong>Amount:</strong> RD$1,250</span>
-                        </div>
-                        <div>
-                            <input type="text" id="adminNote_${a.id}" class="admin-note-input" placeholder="Add admin note (optional)">
-                        </div>
-                        <div class="approval-actions">
-                            <button class="btn-success" onclick="processApproval(${a.id}, 'approve')">
-                                ✅ Approve
-                            </button>
-                            <button class="btn-danger" onclick="processApproval(${a.id}, 'reject')">
-                                ❌ Reject
-                            </button>
+                        <div class="pending-actions">
+                            <button class="approve-btn" onclick="processApproval(${item.id}, 'approve')">✅ Aprobar</button>
+                            <button class="reject-btn" onclick="processApproval(${item.id}, 'reject')">❌ Rechazar</button>
                         </div>
                     </div>
                 `).join('');
             } catch (error) {
-                console.error('Error loading approvals:', error);
-                document.getElementById('pendingApprovalsList').innerHTML = 
-                    '<p style="color: #dc3545;">❌ Error loading pending approvals</p>';
+                console.error('Error loading pending approvals:', error);
+                document.getElementById('pendingApprovalsList').innerHTML = '<p style="color: #fc8181;">Error cargando aprobaciones</p>';
             }
         }
-
-        // Process approval
-        async function processApproval(approvalId, action) {
-            const note = document.getElementById(`adminNote_${approvalId}`)?.value || '';
-            
-            if (action === 'approve') {
-                if (!confirm(`Approve this deposit of RD$1,250?`)) return;
-            } else {
-                if (!confirm(`Reject this deposit?`)) return;
-            }
-            
-            try {
-                const response = await fetch('/api/admin/process-approval', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ approvalId, action, adminNotes: note })
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok) {
-                    alert(`✅ ${action === 'approve' ? 'Approved' : 'Rejected'} successfully!`);
-                    loadPendingApprovals();
-                    loadStats();
-                    loadPendingPayments();
-                } else {
-                    alert('❌ Error: ' + (data.error || 'Unknown error'));
-                }
-            } catch (error) {
-                alert('❌ Error: ' + error.message);
-            }
-        }
-
-        // ===================== PAYMENT FUNCTIONS =====================
 
         // Load pending payments
         async function loadPendingPayments() {
             try {
-                const response = await fetch('/api/admin/pending-payments');
-                const payments = await response.json();
+                const response = await fetch(`${API_URL}/api/admin/pending-payments`);
+                const data = await response.json();
                 const container = document.getElementById('pendingPaymentsList');
                 
-                if (!payments || payments.length === 0) {
-                    container.innerHTML = '<p style="color: #666; text-align: center; padding: 20px;">✅ No pending payments</p>';
+                if (data.length === 0) {
+                    container.innerHTML = '<p style="color: #48bb78;">✅ No hay pagos pendientes</p>';
                     return;
                 }
-                
-                container.innerHTML = payments.map(p => `
-                    <div class="payment-item">
-                        <div class="payment-info">
-                            <div>
-                                <strong>${p.customer_number}</strong>
-                                ${p.full_name ? `<span style="color: #666;">- ${p.full_name}</span>` : ''}
-                                <span class="badge badge-warning" style="margin-left: 10px;">Pending</span>
-                            </div>
-                            <div style="color: #666; font-size: 14px; margin-top: 3px;">
-                                💰 RD$${p.amount.toLocaleString()} &nbsp;|&nbsp; 
-                                📱 ${p.whatsapp_number || 'N/A'} &nbsp;|&nbsp;
-                                📅 ${new Date(p.payment_date).toLocaleDateString()}
-                            </div>
+
+                container.innerHTML = data.map(item => `
+                    <div class="pending-item">
+                        <div class="pending-info">
+                            <strong>${item.full_name || item.customer_number}</strong>
+                            <small>Monto: RD$${item.amount.toLocaleString()}</small>
+                            <small>Cliente: ${item.customer_number}</small>
+                            <small>Fecha: ${new Date(item.payment_date).toLocaleDateString('es-DO')}</small>
                         </div>
-                        <div class="payment-actions">
-                            <button class="btn-success" onclick="processPayment('${p.customer_number}')">
-                                ✅ Process Payment
-                            </button>
+                        <div class="pending-actions">
+                            <button class="approve-btn" onclick="processPayment('${item.customer_number}')">💰 Procesar Pago</button>
                         </div>
                     </div>
                 `).join('');
             } catch (error) {
-                console.error('Error loading payments:', error);
-                document.getElementById('pendingPaymentsList').innerHTML = 
-                    '<p style="color: #dc3545;">❌ Error loading pending payments</p>';
+                console.error('Error loading pending payments:', error);
+                document.getElementById('pendingPaymentsList').innerHTML = '<p style="color: #fc8181;">Error cargando pagos</p>';
+            }
+        }
+
+        // Generate master link
+        async function generateMasterLink() {
+            try {
+                const response = await fetch(`${API_URL}/api/admin/generate-master-link`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    const resultDiv = document.getElementById('masterLinkResult');
+                    resultDiv.style.display = 'block';
+                    document.getElementById('masterLinkCode').textContent = 
+                        `${window.location.origin}/join?ref=${data.linkCode}`;
+                    alert('✅ Enlace maestro generado exitosamente!');
+                }
+            } catch (error) {
+                console.error('Error generating master link:', error);
+                alert('Error generando enlace maestro');
+            }
+        }
+
+        // Copy master link
+        function copyMasterLink() {
+            const code = document.getElementById('masterLinkCode').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                alert('📋 Enlace copiado al portapapeles!');
+            });
+        }
+
+        // Process approval
+        async function processApproval(id, action) {
+            if (!confirm(`¿Estás seguro de que quieres ${action === 'approve' ? 'aprobar' : 'rechazar'} esta solicitud?`)) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/api/admin/process-approval`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ approvalId: id, action })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('✅ Operación exitosa!');
+                    loadDashboard();
+                } else {
+                    alert('❌ Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error processing approval:', error);
+                alert('Error procesando la solicitud');
             }
         }
 
         // Process payment
         async function processPayment(customerNumber) {
-            if (!confirm(`Process RD$5,000 payment for customer ${customerNumber}?`)) return;
+            if (!confirm(`¿Procesar pago para ${customerNumber}?`)) return;
             
             try {
-                const response = await fetch('/api/admin/process-payment', {
+                const response = await fetch(`${API_URL}/api/admin/process-payment`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ customerNumber })
                 });
-                
                 const data = await response.json();
                 
-                if (response.ok) {
-                    alert('✅ Payment processed successfully! RD$5,000 has been released.');
-                    loadPendingPayments();
-                    loadStats();
+                if (data.success) {
+                    alert('✅ Pago procesado exitosamente!');
+                    loadDashboard();
                 } else {
-                    alert('❌ Error processing payment: ' + (data.error || 'Unknown error'));
+                    alert('❌ Error: ' + data.error);
                 }
             } catch (error) {
-                alert('❌ Error: ' + error.message);
+                console.error('Error processing payment:', error);
+                alert('Error procesando el pago');
             }
         }
 
-        // ===================== REGISTER FUNCTIONS =====================
+        // Auto-refresh every 30 seconds
+        setInterval(loadDashboard, 30000);
 
-        // Register partner
-        document.getElementById('registerForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const depositSlip = document.getElementById('depositSlip').value.trim();
-            const transactionNumber = document.getElementById('transactionNumber').value.trim();
-            const inviterCode = document.getElementById('inviterCode').value.trim().toUpperCase();
-            const whatsappNumber = document.getElementById('whatsappNumber').value.trim();
-            const resultDiv = document.getElementById('result');
-
-            try {
-                const response = await fetch('/api/register', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ depositSlip, transactionNumber, inviterCode, whatsappNumber })
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok) {
-                    resultDiv.innerHTML = `
-                        <div class="success">
-                            <strong>✅ Registration Successful!</strong>
-                            <div class="customer-number">${data.customerNumber}</div>
-                            <p>Valid until: <strong>${new Date(data.expiryDate).toLocaleDateString()}</strong></p>
-                            <p>📱 WhatsApp notification sent</p>
-                        </div>
-                    `;
-                    document.getElementById('registerForm').reset();
-                    loadStats();
-                    loadPendingPayments();
-                } else {
-                    resultDiv.innerHTML = `<div class="error">❌ ${data.error || 'Registration failed'}</div>`;
-                }
-            } catch (error) {
-                resultDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
-            }
-        });
-
-        // ===================== SEARCH FUNCTIONS =====================
-
-        // Search partner
-        async function searchPartner() {
-            const customerNumber = document.getElementById('searchCustomer').value.trim().toUpperCase();
-            const resultDiv = document.getElementById('searchResult');
-            
-            if (!customerNumber) {
-                resultDiv.innerHTML = `<div class="error">Please enter a customer number</div>`;
-                return;
-            }
-
-            try {
-                const response = await fetch('/api/check-status', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ customerNumber })
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok) {
-                    const isActive = data.isActive;
-                    let html = `
-                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                            <p><strong>Customer:</strong> ${data.customerNumber}</p>
-                            ${data.fullName ? `<p><strong>Name:</strong> ${data.fullName}</p>` : ''}
-                            <p><strong>Status:</strong> 
-                                <span class="badge ${isActive ? 'badge-success' : 'badge-danger'}">
-                                    ${isActive ? '✅ Active' : '❌ Expired'}
-                                    ${isActive ? `(${data.daysLeft} days left)` : ''}
-                                </span>
-                            </p>
-                            <p><strong>Referrals:</strong> ${data.referralCount}</p>
-                            <p><strong>Expected Payouts:</strong> ${data.expectedPayouts || 0}</p>
-                            <p><strong>Completed Payments:</strong> ${data.completedPayments || 0}</p>
-                            <p><strong>Pending Payments:</strong> ${data.pendingPayments || 0}</p>
-                            <p><strong>Total Paid:</strong> RD$${(data.totalPaid || 0).toLocaleString()}</p>
-                            <p><strong>Pending Amount:</strong> RD$${(data.totalPending || 0).toLocaleString()}</p>
-                    `;
-                    
-                    if (data.referralsList && data.referralsList.length > 0) {
-                        html += `
-                            <p><strong>Referral List:</strong></p>
-                            <div class="referral-list">
-                                ${data.referralsList.map(ref => `<div class="referral-item">• ${ref}</div>`).join('')}
-                            </div>
-                        `;
-                    }
-                    
-                    html += `
-                            <p><strong>Registered:</strong> ${new Date(data.registrationDate).toLocaleDateString()}</p>
-                            <p><strong>Expires:</strong> ${new Date(data.expiryDate).toLocaleDateString()}</p>
-                            <p><strong>WhatsApp:</strong> ${data.whatsappNumber}</p>
-                        </div>
-                    `;
-                    
-                    resultDiv.innerHTML = html;
-                } else {
-                    resultDiv.innerHTML = `<div class="error">❌ ${data.error || 'Not found'}</div>`;
-                }
-            } catch (error) {
-                resultDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
-            }
-        }
-
-        // ===================== INITIALIZATION =====================
-
-        // Load all data
-        loadStats();
-        loadPendingPayments();
-        loadPendingApprovals();
-
-        // Refresh every 30 seconds
-        setInterval(() => {
-            loadStats();
-            loadPendingPayments();
-            loadPendingApprovals();
-        }, 30000);
+        // Load dashboard on page load
+        loadDashboard();
     </script>
 </body>
 </html>
