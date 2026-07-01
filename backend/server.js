@@ -1,12 +1,23 @@
 // backend/server.js
 const express = require('express');
 const cors = require('cors');
-const Database = require('better-sqlite3');
+const sqlite3 = require('sqlite3').verbose();  // ← Changed this
 const { v4: uuidv4 } = require('uuid');
 const twilio = require('twilio');
 require('dotenv').config();
 const path = require('path');
 const fs = require('fs');
+
+// Fix for sqlite3 on Render
+process.env.NODE_ENV = process.env.NODE_ENV || 'production';
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+// ... rest of your code
+
+// Database setup
+const db = new sqlite3.Database('./database/partnerhand.db');  // ← Changed this
 
 // Fix for better-sqlite3 on Render
 process.env.NODE_ENV = process.env.NODE_ENV || 'production';
