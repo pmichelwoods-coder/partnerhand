@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digital Partner Hand - Join / Unirse</title>
+    <title>Digital Partner Hand - Unirse / Join</title>
     <style>
         * {
             margin: 0;
@@ -20,7 +20,7 @@
             justify-content: center;
         }
         .container {
-            max-width: 500px;
+            max-width: 600px;
             width: 100%;
         }
         .card {
@@ -29,29 +29,124 @@
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
+        .language-toggle {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .language-toggle button {
+            padding: 5px 15px;
+            border: 2px solid #667eea;
+            background: transparent;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #667eea;
+            transition: all 0.3s;
+            font-size: 0.9em;
+        }
+        .language-toggle button.active {
+            background: #667eea;
+            color: white;
+        }
+        .language-toggle button:hover {
+            background: #667eea;
+            color: white;
+        }
+        .handshake-image {
+            text-align: center;
+            margin: 10px 0 20px 0;
+        }
+        .handshake-image img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+        .handshake-image .placeholder {
+            background: #f0f4ff;
+            padding: 30px;
+            border-radius: 10px;
+            color: #667eea;
+            font-size: 0.9em;
+        }
         .card h1 {
             color: #333;
             font-size: 2em;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             text-align: center;
         }
         .card .subtitle {
             text-align: center;
             color: #666;
-            margin-bottom: 30px;
+            font-size: 0.95em;
+            margin-bottom: 5px;
         }
-        .bilingual {
+        .earn-badge {
+            text-align: center;
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+            padding: 12px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #333;
+        }
+        .earn-badge span {
+            color: #1a1a2e;
+        }
+        .info-box {
+            background: #f0f4ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            text-align: center;
+        }
+        .info-box p {
+            color: #333;
+            font-size: 0.95em;
+        }
+        .info-box strong {
+            color: #667eea;
+        }
+        .bank-details {
+            background: #f8f9fa;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .bank-details h4 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .bank-details .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.95em;
+        }
+        .bank-details .row:last-child {
+            border-bottom: none;
+        }
+        .bank-details .label {
             color: #666;
-            font-size: 0.85em;
+        }
+        .bank-details .value {
+            color: #333;
+            font-weight: bold;
         }
         .input-group {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         .input-group label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             color: #555;
             font-weight: 500;
+            font-size: 0.95em;
         }
         .input-group input {
             width: 100%;
@@ -65,9 +160,6 @@
             outline: none;
             border-color: #667eea;
         }
-        .input-group input:disabled {
-            background: #f7fafc;
-        }
         .btn {
             background: #667eea;
             color: white;
@@ -79,6 +171,7 @@
             transition: background 0.3s;
             width: 100%;
             font-weight: bold;
+            margin-top: 10px;
         }
         .btn:hover {
             background: #5a67d8;
@@ -87,17 +180,12 @@
             opacity: 0.6;
             cursor: not-allowed;
         }
-        .btn-success {
-            background: #48bb78;
-        }
-        .btn-success:hover {
-            background: #38a169;
-        }
         .alert {
             padding: 12px;
             border-radius: 8px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             display: none;
+            font-size: 0.95em;
         }
         .alert-success {
             background: #c6f6d5;
@@ -119,14 +207,14 @@
         }
         .referral-info {
             background: #f7fafc;
-            padding: 15px;
+            padding: 10px 15px;
             border-radius: 8px;
-            margin: 15px 0;
+            margin: 10px 0;
             text-align: center;
+            font-size: 0.95em;
         }
         .referral-info strong {
             color: #667eea;
-            font-size: 1.2em;
         }
         .loader {
             border: 3px solid #f3f3f3;
@@ -143,85 +231,313 @@
             100% { transform: rotate(360deg); }
         }
         .benefits {
-            margin: 20px 0;
+            margin: 15px 0;
             padding: 15px;
             background: #f7fafc;
             border-radius: 8px;
         }
         .benefits li {
             list-style: none;
-            padding: 5px 0;
+            padding: 4px 0;
             color: #555;
+            font-size: 0.95em;
         }
         .benefits li::before {
             content: "✅ ";
+        }
+        .legal-checkbox {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin: 15px 0;
+            padding: 12px;
+            background: #fef9e7;
+            border: 1px solid #f39c12;
+            border-radius: 8px;
+        }
+        .legal-checkbox input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-top: 2px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .legal-checkbox label {
+            color: #555;
+            font-size: 0.85em;
+            line-height: 1.4;
+            cursor: pointer;
+        }
+        .legal-checkbox label strong {
+            color: #333;
+        }
+        .legal-checkbox .legal-text {
+            color: #666;
+            font-size: 0.8em;
+            margin-top: 3px;
+        }
+        .hidden {
+            display: none;
+        }
+        @media (max-width: 500px) {
+            .card {
+                padding: 20px;
+            }
+            .card h1 {
+                font-size: 1.5em;
+            }
+            .bank-details .row {
+                flex-direction: column;
+                padding: 8px 0;
+            }
+            .earn-badge {
+                font-size: 0.95em;
+                padding: 10px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="card">
-            <h1>🚀 Join Digital Partner Hand / Unirse</h1>
-            <p class="subtitle bilingual">Start earning RD$5,000 for every 5 referrals! / ¡Comienza a ganar RD$5,000 por cada 5 referidos!</p>
-
-            <div id="alertMessage" class="alert"></div>
-
-            <div id="referralInfo" class="referral-info">
-                <p>Referred by / Referido por: <strong id="referrerCode">Loading...</strong></p>
-                <small class="bilingual">Your referral code will be automatically applied / Tu código de referido se aplicará automáticamente</small>
+            <!-- Language Toggle -->
+            <div class="language-toggle">
+                <button id="btnSpanish" class="active" onclick="setLanguage('es')">🇪🇸 Español</button>
+                <button id="btnEnglish" onclick="setLanguage('en')">🇺🇸 English</button>
             </div>
 
-            <div class="input-group">
-                <label>Full Name / Nombre Completo *</label>
-                <input type="text" id="fullName" placeholder="Enter your full name / Ingresa tu nombre completo">
+            <!-- Handshake Image -->
+            <div class="handshake-image">
+                <img src="https://via.placeholder.com/600x150/667eea/white?text=🤝+Handshake+with+RD%24+Note" alt="Handshake with Dominican Republic note" style="width:100%; max-height:150px; object-fit:cover; border-radius:10px;">
+                <div style="font-size:0.8em; color:#666; margin-top:5px;">🤝 Two hands passing a Dominican Republic note</div>
             </div>
 
-            <div class="input-group">
-                <label>WhatsApp Number / Número de WhatsApp *</label>
-                <input type="tel" id="whatsappNumber" placeholder="Ej: 8095551234">
-                <small class="bilingual">Enter without country code (Dominican Republic) / Ingresa sin código de país (República Dominicana)</small>
+            <div id="content">
+                <h1 id="title">🚀 Digital Partner Hand</h1>
+                <p id="subtitle" class="subtitle">Paga una vez y obtén acceso por 90 días / Pay once and get access for 90 days</p>
+
+                <!-- Earn Badge -->
+                <div class="earn-badge" id="earnBadge">
+                    💰 <span id="earnText">Gana RD$5,000 en tan solo 3 días o semanalmente</span>
+                    <span id="earnTextEn" style="display:none;">Earn RD$5,000 in as little as 3 days or weekly</span>
+                </div>
+
+                <div id="alertMessage" class="alert"></div>
+
+                <!-- Bank Details -->
+                <div class="bank-details" id="bankDetails">
+                    <h4 id="bankTitle">🏦 Datos Bancarios / Bank Details</h4>
+                    <div class="row">
+                        <span class="label" id="bankLabel">Banco / Bank:</span>
+                        <span class="value">BanReservas</span>
+                    </div>
+                    <div class="row">
+                        <span class="label" id="accountLabel">Número de Cuenta / Account Number:</span>
+                        <span class="value">001-123456-7</span>
+                    </div>
+                    <div class="row">
+                        <span class="label" id="ownerLabel">Titular / Account Holder:</span>
+                        <span class="value">Digital Partner Hand</span>
+                    </div>
+                    <div class="row">
+                        <span class="label" id="amountLabel">Monto / Amount:</span>
+                        <span class="value">RD$1,250</span>
+                    </div>
+                    <div class="row">
+                        <span class="label" id="conceptLabel">Concepto / Concept:</span>
+                        <span class="value">Inscripción / Registration</span>
+                    </div>
+                </div>
+
+                <!-- Info Box -->
+                <div class="info-box">
+                    <p id="infoText">
+                        🔑 <strong>Paga una vez y gana sin límites por 90 días / Pay once and earn unlimited for 90 days</strong><br>
+                        <span style="font-size:0.85em; color:#666;">Sin límite de pagos durante tu período activo / No limit on payments during your active period</span>
+                    </p>
+                </div>
+
+                <div id="referralInfo" class="referral-info">
+                    <p id="referralLabel">Referido por / Referred by: <strong id="referrerCode">Cargando...</strong></p>
+                </div>
+
+                <div class="input-group">
+                    <label id="lblName">Nombre Completo / Full Name *</label>
+                    <input type="text" id="fullName" placeholder="Ingresa tu nombre completo">
+                </div>
+
+                <div class="input-group">
+                    <label id="lblWhatsapp">Número de WhatsApp *</label>
+                    <input type="tel" id="whatsappNumber" placeholder="Ej: 8095551234">
+                    <small id="whatsappHint" style="color: #666; font-size:0.8em;">Sin código de país / Without country code</small>
+                </div>
+
+                <div class="input-group">
+                    <label id="lblTransaction">Número de Transacción / Transaction Number *</label>
+                    <input type="text" id="transactionNumber" placeholder="8+ dígitos / 8+ digits">
+                    <small id="transactionHint" style="color: #666; font-size:0.8em;">De tu depósito de RD$1,250 / From your RD$1,250 deposit</small>
+                </div>
+
+                <!-- Legal Checkbox -->
+                <div class="legal-checkbox">
+                    <input type="checkbox" id="legalCheckbox">
+                    <label for="legalCheckbox">
+                        <strong id="legalTitle">Acepto los términos y condiciones / I accept the terms and conditions</strong>
+                        <div id="legalText" class="legal-text">
+                            Al marcar esta casilla, acepto que estoy comprando un producto digital y que no se realizarán reembolsos de los fondos. / By checking this box, I agree that I am purchasing a digital product and that no funds will be refunded.
+                        </div>
+                    </label>
+                </div>
+
+                <button class="btn" onclick="submitDeposit()" id="submitBtn">📤 Enviar Depósito / Submit Deposit</button>
+
+                <div class="loader" id="loadingSpinner"></div>
+
+                <div class="benefits">
+                    <h3 id="benefitsTitle" style="color: #333; margin-bottom: 8px; font-size:1em;">✅ Beneficios / Benefits:</h3>
+                    <ul id="benefitsList">
+                        <li>Paga una vez / Pay once</li>
+                        <li>90 días de acceso / 90 days access</li>
+                        <li>Gana RD$5,000 por cada 5 referidos / Earn RD$5,000 for every 5 referrals</li>
+                        <li>Sin límite de pagos / No payment limit</li>
+                        <li>¡Ganancias ilimitadas! / Unlimited earnings!</li>
+                    </ul>
+                </div>
             </div>
-
-            <div class="input-group">
-                <label>Transaction Number / Número de Transacción *</label>
-                <input type="text" id="transactionNumber" placeholder="Enter your transaction number (8+ digits)">
-                <small class="bilingual">From your RD$1,250 deposit / De tu depósito de RD$1,250</small>
-            </div>
-
-            <button class="btn" onclick="submitDeposit()">📤 Submit Deposit for Approval / Enviar Depósito para Aprobación</button>
-
-            <div class="loader" id="loadingSpinner"></div>
-
-            <div class="benefits">
-                <h3 style="color: #333; margin-bottom: 10px;">How it works / Cómo funciona:</h3>
-                <ul>
-                    <li>Submit your RD$1,250 deposit for approval / Envía tu depósito de RD$1,250 para aprobación</li>
-                    <li>Get approved within 24-48 hours / Recibe aprobación en 24-48 horas</li>
-                    <li>Share your referral link with friends / Comparte tu enlace de referidos con amigos</li>
-                    <li>Earn RD$5,000 for every 5 referrals / Gana RD$5,000 por cada 5 referidos</li>
-                    <li>Unlimited earnings! / ¡Ganancias ilimitadas!</li>
-                </ul>
-            </div>
-
-            <p style="text-align: center; margin-top: 20px; color: #666;">
-                <a href="/" style="color: #667eea; text-decoration: none;">← Back to Home / Volver al Inicio</a>
-            </p>
         </div>
     </div>
 
     <script>
         const API_URL = window.location.origin;
+        let currentLang = 'es';
+
+        const translations = {
+            es: {
+                title: '🚀 Digital Partner Hand',
+                subtitle: 'Paga una vez y obtén acceso por 90 días',
+                earnText: '💰 Gana RD$5,000 en tan solo 3 días o semanalmente',
+                bankTitle: '🏦 Datos Bancarios',
+                bankLabel: 'Banco:',
+                accountLabel: 'Número de Cuenta:',
+                ownerLabel: 'Titular:',
+                amountLabel: 'Monto:',
+                conceptLabel: 'Concepto:',
+                infoText: '🔑 Paga una vez y gana sin límites por 90 días\nSin límite de pagos durante tu período activo',
+                referralLabel: 'Referido por:',
+                lblName: 'Nombre Completo *',
+                lblWhatsapp: 'Número de WhatsApp *',
+                whatsappHint: 'Sin código de país (República Dominicana)',
+                lblTransaction: 'Número de Transacción *',
+                transactionHint: 'De tu depósito de RD$1,250',
+                legalTitle: 'Acepto los términos y condiciones',
+                legalText: 'Al marcar esta casilla, acepto que estoy comprando un producto digital y que no se realizarán reembolsos de los fondos.',
+                submitBtn: '📤 Enviar Depósito para Aprobación',
+                benefitsTitle: '✅ Beneficios:',
+                benefits: [
+                    'Paga una vez',
+                    '90 días de acceso',
+                    'Gana RD$5,000 por cada 5 referidos',
+                    'Sin límite de pagos',
+                    '¡Ganancias ilimitadas!'
+                ],
+                alertError: 'Por favor acepta los términos y condiciones',
+                alertName: 'Por favor ingresa tu nombre completo',
+                alertWhatsapp: 'Por favor ingresa un número de WhatsApp válido (10 dígitos)',
+                alertTransaction: 'El número de transacción debe tener al menos 8 dígitos',
+                alertSuccess: '✅ Depósito enviado exitosamente! Recibirás una notificación cuando sea aprobado.',
+                alertErrorSubmit: '❌ Error al enviar el depósito'
+            },
+            en: {
+                title: '🚀 Digital Partner Hand',
+                subtitle: 'Pay once and get access for 90 days',
+                earnText: '💰 Earn RD$5,000 in as little as 3 days or weekly',
+                bankTitle: '🏦 Bank Details',
+                bankLabel: 'Bank:',
+                accountLabel: 'Account Number:',
+                ownerLabel: 'Account Holder:',
+                amountLabel: 'Amount:',
+                conceptLabel: 'Concept:',
+                infoText: '🔑 Pay once and earn unlimited for 90 days\nNo limit on payments during your active period',
+                referralLabel: 'Referred by:',
+                lblName: 'Full Name *',
+                lblWhatsapp: 'WhatsApp Number *',
+                whatsappHint: 'Without country code (Dominican Republic)',
+                lblTransaction: 'Transaction Number *',
+                transactionHint: 'From your RD$1,250 deposit',
+                legalTitle: 'I accept the terms and conditions',
+                legalText: 'By checking this box, I agree that I am purchasing a digital product and that no funds will be refunded.',
+                submitBtn: '📤 Submit Deposit for Approval',
+                benefitsTitle: '✅ Benefits:',
+                benefits: [
+                    'Pay once',
+                    '90 days access',
+                    'Earn RD$5,000 for every 5 referrals',
+                    'No payment limit',
+                    'Unlimited earnings!'
+                ],
+                alertError: 'Please accept the terms and conditions',
+                alertName: 'Please enter your full name',
+                alertWhatsapp: 'Please enter a valid WhatsApp number (10 digits)',
+                alertTransaction: 'Transaction number must be at least 8 digits',
+                alertSuccess: '✅ Deposit submitted successfully! You will receive a notification when approved.',
+                alertErrorSubmit: '❌ Error submitting deposit'
+            }
+        };
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            const t = translations[lang];
+
+            document.getElementById('btnSpanish').className = lang === 'es' ? 'active' : '';
+            document.getElementById('btnEnglish').className = lang === 'en' ? 'active' : '';
+
+            document.getElementById('title').textContent = t.title;
+            document.getElementById('subtitle').textContent = t.subtitle;
+            
+            // Earn badge
+            const earnBadge = document.getElementById('earnBadge');
+            if (lang === 'es') {
+                earnBadge.innerHTML = `💰 <span id="earnText">${t.earnText}</span>`;
+            } else {
+                earnBadge.innerHTML = `💰 <span id="earnTextEn">${t.earnText}</span>`;
+            }
+
+            document.getElementById('bankTitle').textContent = t.bankTitle;
+            document.getElementById('bankLabel').textContent = t.bankLabel;
+            document.getElementById('accountLabel').textContent = t.accountLabel;
+            document.getElementById('ownerLabel').textContent = t.ownerLabel;
+            document.getElementById('amountLabel').textContent = t.amountLabel;
+            document.getElementById('conceptLabel').textContent = t.conceptLabel;
+
+            document.getElementById('infoText').innerHTML = t.infoText.replace('\n', '<br>');
+            document.getElementById('referralLabel').innerHTML = `${t.referralLabel} <strong id="referrerCode">${document.getElementById('referrerCode').textContent}</strong>`;
+            document.getElementById('lblName').textContent = t.lblName;
+            document.getElementById('lblWhatsapp').textContent = t.lblWhatsapp;
+            document.getElementById('whatsappHint').textContent = t.whatsappHint;
+            document.getElementById('lblTransaction').textContent = t.lblTransaction;
+            document.getElementById('transactionHint').textContent = t.transactionHint;
+            document.getElementById('legalTitle').textContent = t.legalTitle;
+            document.getElementById('legalText').textContent = t.legalText;
+            document.getElementById('submitBtn').textContent = t.submitBtn;
+            document.getElementById('benefitsTitle').textContent = t.benefitsTitle;
+
+            const benefitsList = document.getElementById('benefitsList');
+            benefitsList.innerHTML = t.benefits.map(item => `<li>${item}</li>`).join('');
+
+            document.getElementById('fullName').placeholder = t.lblName.replace(' *', '');
+            document.getElementById('whatsappNumber').placeholder = t.lblWhatsapp.replace(' *', '');
+            document.getElementById('transactionNumber').placeholder = '8+ dígitos / 8+ digits';
+        }
 
         // Get referral code from URL
         const urlParams = new URLSearchParams(window.location.search);
         const referralCode = urlParams.get('ref');
 
-        // Check referral code
         async function checkReferralCode() {
             const infoEl = document.getElementById('referrerCode');
             
             if (!referralCode) {
-                infoEl.textContent = 'None (Direct Join) / Ninguno (Unión Directa)';
+                infoEl.textContent = currentLang === 'es' ? 'Ninguno' : 'None';
                 document.getElementById('referralInfo').style.display = 'none';
                 return;
             }
@@ -232,44 +548,53 @@
                 
                 if (data.valid) {
                     infoEl.textContent = referralCode;
-                    showAlert('info', `✅ Welcome! You've been referred by ${referralCode} / ¡Bienvenido! Has sido referido por ${referralCode}`);
+                    showAlert('info', currentLang === 'es' 
+                        ? `✅ ¡Bienvenido! Has sido referido por ${referralCode}`
+                        : `✅ Welcome! You've been referred by ${referralCode}`);
                 } else {
-                    infoEl.textContent = 'Invalid Code / Código Inválido';
-                    showAlert('error', '❌ Invalid referral link. Please use a valid link. / Enlace de referido inválido. Por favor usa un enlace válido.');
+                    infoEl.textContent = currentLang === 'es' ? 'Código Inválido' : 'Invalid Code';
+                    showAlert('error', currentLang === 'es' 
+                        ? '❌ Enlace de referido inválido.'
+                        : '❌ Invalid referral link.');
                 }
             } catch (error) {
                 console.error('Error checking referral:', error);
-                infoEl.textContent = 'Error loading / Error al cargar';
+                infoEl.textContent = currentLang === 'es' ? 'Error al cargar' : 'Error loading';
             }
         }
 
-        // Submit deposit
         async function submitDeposit() {
             const fullName = document.getElementById('fullName').value.trim();
             const whatsappNumber = document.getElementById('whatsappNumber').value.trim();
             const transactionNumber = document.getElementById('transactionNumber').value.trim();
+            const legalChecked = document.getElementById('legalCheckbox').checked;
 
-            // Validation
+            const t = translations[currentLang];
+
+            if (!legalChecked) {
+                showAlert('error', t.alertError);
+                return;
+            }
+
             if (!fullName) {
-                showAlert('error', 'Please enter your full name / Por favor ingresa tu nombre completo');
+                showAlert('error', t.alertName);
                 return;
             }
 
             if (!whatsappNumber || whatsappNumber.length < 10) {
-                showAlert('error', 'Please enter a valid WhatsApp number (10 digits) / Por favor ingresa un número de WhatsApp válido (10 dígitos)');
+                showAlert('error', t.alertWhatsapp);
                 return;
             }
 
             if (!transactionNumber || transactionNumber.length < 8) {
-                showAlert('error', 'Transaction number must be at least 8 digits / El número de transacción debe tener al menos 8 dígitos');
+                showAlert('error', t.alertTransaction);
                 return;
             }
 
-            // Show loading
-            const btn = document.querySelector('.btn');
+            const btn = document.getElementById('submitBtn');
             const spinner = document.getElementById('loadingSpinner');
             btn.disabled = true;
-            btn.textContent = 'Submitting... / Enviando...';
+            btn.textContent = currentLang === 'es' ? 'Enviando...' : 'Submitting...';
             spinner.style.display = 'block';
 
             try {
@@ -287,44 +612,32 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    showAlert('success', data.message || '✅ Deposit submitted successfully! / ¡Depósito enviado exitosamente!');
+                    showAlert('success', t.alertSuccess);
                     document.getElementById('fullName').value = '';
                     document.getElementById('whatsappNumber').value = '';
                     document.getElementById('transactionNumber').value = '';
+                    document.getElementById('legalCheckbox').checked = false;
                 } else {
-                    showAlert('error', '❌ ' + (data.error || 'Submission failed / Error al enviar'));
+                    showAlert('error', '❌ ' + (data.error || t.alertErrorSubmit));
                 }
             } catch (error) {
                 console.error('Submit deposit error:', error);
-                showAlert('error', '❌ Error submitting deposit / Error al enviar el depósito');
+                showAlert('error', t.alertErrorSubmit);
             } finally {
                 btn.disabled = false;
-                btn.textContent = '📤 Submit Deposit for Approval / Enviar Depósito para Aprobación';
+                btn.textContent = translations[currentLang].submitBtn;
                 spinner.style.display = 'none';
             }
         }
 
-        // Show alert
         function showAlert(type, message) {
             const alertEl = document.getElementById('alertMessage');
             alertEl.className = 'alert alert-' + type + ' show';
             alertEl.textContent = message;
-            
-            // Auto-hide after 5 seconds
-            setTimeout(() => {
-                alertEl.classList.remove('show');
-            }, 5000);
+            setTimeout(() => alertEl.classList.remove('show'), 6000);
         }
 
-        // Check referral code on page load
         checkReferralCode();
-
-        // Enter key support
-        document.getElementById('transactionNumber').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                submitDeposit();
-            }
-        });
     </script>
 </body>
 </html>
