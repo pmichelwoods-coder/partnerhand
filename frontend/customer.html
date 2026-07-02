@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digital Partner Hand - Customer Panel</title>
+    <title>Digital Partner Hand - Panel de Cliente</title>
     <style>
         * {
             margin: 0;
@@ -27,6 +27,31 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             margin-bottom: 20px;
         }
+        .language-toggle {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .language-toggle button {
+            padding: 5px 15px;
+            border: 2px solid #667eea;
+            background: transparent;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #667eea;
+            transition: all 0.3s;
+            font-size: 0.9em;
+        }
+        .language-toggle button.active {
+            background: #667eea;
+            color: white;
+        }
+        .language-toggle button:hover {
+            background: #667eea;
+            color: white;
+        }
         .card h2 {
             color: #333;
             margin-bottom: 20px;
@@ -48,6 +73,7 @@
             border-radius: 8px;
             font-size: 1em;
             transition: border-color 0.3s;
+            text-transform: uppercase;
         }
         .input-group input:focus {
             outline: none;
@@ -130,9 +156,20 @@
         .hidden {
             display: none;
         }
-        .bilingual {
-            color: #666;
-            font-size: 0.85em;
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+            font-size: 0.95em;
+        }
+        .alert-error {
+            background: #fed7d7;
+            color: #742a2a;
+            border: 1px solid #fc8181;
+        }
+        .alert.show {
+            display: block;
         }
         @media (max-width: 600px) {
             .info-grid {
@@ -144,69 +181,76 @@
 <body>
     <div class="container">
         <div class="card" style="text-align: center;">
-            <h1>👤 Digital Partner Hand</h1>
-            <p class="bilingual">Customer Panel / Panel de Cliente</p>
+            <div class="language-toggle">
+                <button id="btnSpanish" class="active" onclick="setLanguage('es')">🇪🇸 Español</button>
+                <button id="btnEnglish" onclick="setLanguage('en')">🇺🇸 English</button>
+            </div>
+            <h1 id="mainTitle">👤 Digital Partner Hand</h1>
+            <p id="mainSubtitle" style="color: #666;">Panel de Cliente</p>
         </div>
 
         <div class="card" id="loginCard">
-            <h2>🔐 Check Your Status / Verificar Tu Estado</h2>
+            <h2 id="loginTitle">🔐 Verificar Tu Estado</h2>
+            <p id="loginHint" style="color: #666; margin-bottom: 15px;">Ingresa tu número de cliente para ver tus estadísticas</p>
             <div class="input-group">
-                <label>Customer Number / Número de Cliente</label>
-                <input type="text" id="customerNumber" placeholder="Enter your customer number" maxlength="8" style="text-transform: uppercase;">
+                <label id="lblNumber">Número de Cliente</label>
+                <input type="text" id="customerNumber" placeholder="Ej: ABC12345" maxlength="8" style="text-transform: uppercase;">
             </div>
-            <button class="btn" onclick="checkStatus()">📊 Check Status / Verificar Estado</button>
+            <button class="btn" onclick="checkStatus()" id="btnCheck">📊 Verificar Estado</button>
+            <div id="alertMessage" class="alert"></div>
         </div>
 
         <div class="card hidden" id="dashboardCard">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-                <h2>📊 Dashboard / Panel de Control</h2>
-                <button class="btn" onclick="logout()" style="width: auto; padding: 8px 20px; background: #fc8181;">Logout / Cerrar Sesión</button>
+                <h2 id="dashboardTitle">📊 Panel de Control</h2>
+                <button class="btn" onclick="logout()" style="width: auto; padding: 8px 20px; background: #fc8181;" id="btnLogout">Cerrar Sesión</button>
             </div>
             
             <div class="info-grid">
                 <div class="info-item">
-                    <label>Customer Number / Número</label>
+                    <label id="lblDisplayNumber">Número de Cliente</label>
                     <div class="value" id="displayNumber">-</div>
                 </div>
                 <div class="info-item">
-                    <label>Status / Estado</label>
+                    <label id="lblStatus">Estado</label>
                     <div class="value" id="displayStatus">-</div>
                 </div>
                 <div class="info-item">
-                    <label>Days Left / Días Restantes</label>
+                    <label id="lblDays">Días Restantes</label>
                     <div class="value" id="displayDays">-</div>
                 </div>
                 <div class="info-item">
-                    <label>Total Referrals / Referidos</label>
+                    <label id="lblReferrals">Total Referidos</label>
                     <div class="value" id="displayReferrals">0</div>
                 </div>
                 <div class="info-item">
-                    <label>Expected Payouts / Pagos Esperados</label>
+                    <label id="lblPayouts">Pagos Esperados</label>
                     <div class="value" id="displayPayouts">0</div>
                 </div>
                 <div class="info-item">
-                    <label>Total Earned / Total Ganado</label>
+                    <label id="lblEarned">Total Ganado</label>
                     <div class="value" id="displayEarned">RD$0</div>
                 </div>
             </div>
 
             <div style="margin: 20px 0;">
-                <h3>🔗 Your Referral Link / Tu Enlace de Referidos</h3>
-                <div class="referral-link" id="referralLink">Loading...</div>
-                <button class="copy-btn" onclick="copyReferralLink()">📋 Copy Link / Copiar Enlace</button>
+                <h3 id="linkTitle">🔗 Tu Enlace de Referidos</h3>
+                <p id="linkHint" style="color: #666; font-size: 0.9em; margin-bottom: 10px;">Comparte este enlace con amigos y gana RD$5,000 por cada 5 referidos</p>
+                <div class="referral-link" id="referralLink">Cargando...</div>
+                <button class="copy-btn" onclick="copyReferralLink()" id="btnCopy">📋 Copiar Enlace</button>
             </div>
 
             <div style="margin: 20px 0;">
-                <h3>📋 Referral History / Historial de Referidos</h3>
+                <h3 id="historyTitle">📋 Historial de Referidos</h3>
                 <div id="referralHistory">
-                    <p style="color: #666;">No referrals yet / Sin referidos aún</p>
+                    <p id="noReferrals" style="color: #666;">Sin referidos aún</p>
                 </div>
             </div>
 
             <div style="margin: 20px 0;">
-                <h3>💰 Payment History / Historial de Pagos</h3>
+                <h3 id="paymentTitle">💰 Historial de Pagos</h3>
                 <div id="paymentHistory">
-                    <p style="color: #666;">No payments yet / Sin pagos aún</p>
+                    <p id="noPayments" style="color: #666;">Sin pagos aún</p>
                 </div>
             </div>
         </div>
@@ -214,13 +258,110 @@
 
     <script>
         const API_URL = window.location.origin;
+        let currentLang = 'es';
 
-        // Check status
+        const translations = {
+            es: {
+                mainTitle: '👤 Digital Partner Hand',
+                mainSubtitle: 'Panel de Cliente',
+                loginTitle: '🔐 Verificar Tu Estado',
+                loginHint: 'Ingresa tu número de cliente para ver tus estadísticas',
+                lblNumber: 'Número de Cliente',
+                btnCheck: '📊 Verificar Estado',
+                dashboardTitle: '📊 Panel de Control',
+                btnLogout: 'Cerrar Sesión',
+                lblDisplayNumber: 'Número de Cliente',
+                lblStatus: 'Estado',
+                lblDays: 'Días Restantes',
+                lblReferrals: 'Total Referidos',
+                lblPayouts: 'Pagos Esperados',
+                lblEarned: 'Total Ganado',
+                linkTitle: '🔗 Tu Enlace de Referidos',
+                linkHint: 'Comparte este enlace con amigos y gana RD$5,000 por cada 5 referidos',
+                btnCopy: '📋 Copiar Enlace',
+                historyTitle: '📋 Historial de Referidos',
+                paymentTitle: '💰 Historial de Pagos',
+                noReferrals: 'Sin referidos aún',
+                noPayments: 'Sin pagos aún',
+                active: '✅ Activo',
+                expired: '❌ Expirado',
+                placeholder: 'Ej: ABC12345',
+                alertError: 'Por favor ingresa tu número de cliente',
+                alertNotFound: 'Número de cliente no encontrado'
+            },
+            en: {
+                mainTitle: '👤 Digital Partner Hand',
+                mainSubtitle: 'Customer Panel',
+                loginTitle: '🔐 Check Your Status',
+                loginHint: 'Enter your customer number to see your stats',
+                lblNumber: 'Customer Number',
+                btnCheck: '📊 Check Status',
+                dashboardTitle: '📊 Dashboard',
+                btnLogout: 'Logout',
+                lblDisplayNumber: 'Customer Number',
+                lblStatus: 'Status',
+                lblDays: 'Days Left',
+                lblReferrals: 'Total Referrals',
+                lblPayouts: 'Expected Payouts',
+                lblEarned: 'Total Earned',
+                linkTitle: '🔗 Your Referral Link',
+                linkHint: 'Share this link with friends and earn RD$5,000 for every 5 referrals',
+                btnCopy: '📋 Copy Link',
+                historyTitle: '📋 Referral History',
+                paymentTitle: '💰 Payment History',
+                noReferrals: 'No referrals yet',
+                noPayments: 'No payments yet',
+                active: '✅ Active',
+                expired: '❌ Expired',
+                placeholder: 'Eg: ABC12345',
+                alertError: 'Please enter your customer number',
+                alertNotFound: 'Customer number not found'
+            }
+        };
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            const t = translations[lang];
+
+            document.getElementById('btnSpanish').className = lang === 'es' ? 'active' : '';
+            document.getElementById('btnEnglish').className = lang === 'en' ? 'active' : '';
+
+            document.getElementById('mainTitle').textContent = t.mainTitle;
+            document.getElementById('mainSubtitle').textContent = t.mainSubtitle;
+            document.getElementById('loginTitle').textContent = t.loginTitle;
+            document.getElementById('loginHint').textContent = t.loginHint;
+            document.getElementById('lblNumber').textContent = t.lblNumber;
+            document.getElementById('btnCheck').textContent = t.btnCheck;
+            document.getElementById('dashboardTitle').textContent = t.dashboardTitle;
+            document.getElementById('btnLogout').textContent = t.btnLogout;
+            document.getElementById('lblDisplayNumber').textContent = t.lblDisplayNumber;
+            document.getElementById('lblStatus').textContent = t.lblStatus;
+            document.getElementById('lblDays').textContent = t.lblDays;
+            document.getElementById('lblReferrals').textContent = t.lblReferrals;
+            document.getElementById('lblPayouts').textContent = t.lblPayouts;
+            document.getElementById('lblEarned').textContent = t.lblEarned;
+            document.getElementById('linkTitle').textContent = t.linkTitle;
+            document.getElementById('linkHint').textContent = t.linkHint;
+            document.getElementById('btnCopy').textContent = t.btnCopy;
+            document.getElementById('historyTitle').textContent = t.historyTitle;
+            document.getElementById('paymentTitle').textContent = t.paymentTitle;
+
+            document.getElementById('customerNumber').placeholder = t.placeholder;
+        }
+
+        function showAlert(type, message) {
+            const alertEl = document.getElementById('alertMessage');
+            alertEl.className = 'alert alert-' + type + ' show';
+            alertEl.textContent = message;
+            setTimeout(() => alertEl.classList.remove('show'), 5000);
+        }
+
         async function checkStatus() {
             const customerNumber = document.getElementById('customerNumber').value.trim().toUpperCase();
+            const t = translations[currentLang];
             
             if (!customerNumber) {
-                alert('Please enter your customer number / Por favor ingresa tu número de cliente');
+                showAlert('error', t.alertError);
                 return;
             }
 
@@ -232,54 +373,55 @@
                 });
 
                 if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error(t.alertNotFound);
+                    }
                     const error = await response.json();
-                    throw new Error(error.error || 'Invalid customer number / Número de cliente inválido');
+                    throw new Error(error.error || t.alertError);
                 }
 
                 const data = await response.json();
                 showDashboard(data);
                 
             } catch (error) {
-                alert('❌ ' + error.message);
+                showAlert('error', error.message);
                 console.error('Status check error:', error);
             }
         }
 
-        // Show dashboard
         function showDashboard(data) {
+            const t = translations[currentLang];
             document.getElementById('loginCard').classList.add('hidden');
             document.getElementById('dashboardCard').classList.remove('hidden');
+            document.getElementById('alertMessage').classList.remove('show');
 
             document.getElementById('displayNumber').textContent = data.customerNumber;
             
-            // Status
             const statusEl = document.getElementById('displayStatus');
             if (data.isActive) {
-                statusEl.innerHTML = '<span class="status-badge status-active">✅ Active / Activo</span>';
+                statusEl.innerHTML = `<span class="status-badge status-active">${t.active}</span>`;
             } else {
-                statusEl.innerHTML = '<span class="status-badge status-inactive">❌ Expired / Expirado</span>';
+                statusEl.innerHTML = `<span class="status-badge status-inactive">${t.expired}</span>`;
             }
             
-            document.getElementById('displayDays').textContent = data.daysLeft + ' days / días';
+            const daysLeft = data.daysLeft || 0;
+            document.getElementById('displayDays').textContent = daysLeft + ' días';
             document.getElementById('displayReferrals').textContent = data.referralCount || 0;
             document.getElementById('displayPayouts').textContent = data.expectedPayouts || 0;
             document.getElementById('displayEarned').textContent = `RD$${data.totalPaid.toLocaleString() || 0}`;
 
-            // Referral link
             const link = `${window.location.origin}/join?ref=${data.customerNumber}`;
             document.getElementById('referralLink').textContent = link;
 
-            // Referral history
             const historyEl = document.getElementById('referralHistory');
             if (data.referralsList && data.referralsList.length > 0) {
                 historyEl.innerHTML = data.referralsList.map(ref => 
                     `<div style="padding: 5px 0; border-bottom: 1px solid #e2e8f0;">🔹 ${ref}</div>`
                 ).join('');
             } else {
-                historyEl.innerHTML = '<p style="color: #666;">No referrals yet / Sin referidos aún</p>';
+                historyEl.innerHTML = `<p style="color: #666;">${t.noReferrals}</p>`;
             }
 
-            // Payment history
             const paymentEl = document.getElementById('paymentHistory');
             if (data.paymentHistory && data.paymentHistory.length > 0) {
                 paymentEl.innerHTML = data.paymentHistory.map(p => 
@@ -289,26 +431,26 @@
                     </div>`
                 ).join('');
             } else {
-                paymentEl.innerHTML = '<p style="color: #666;">No payments yet / Sin pagos aún</p>';
+                paymentEl.innerHTML = `<p style="color: #666;">${t.noPayments}</p>`;
             }
         }
 
-        // Copy referral link
         function copyReferralLink() {
             const link = document.getElementById('referralLink').textContent;
             navigator.clipboard.writeText(link).then(() => {
-                alert('📋 Link copied to clipboard! / ¡Enlace copiado al portapapeles!');
+                alert(currentLang === 'es' 
+                    ? '📋 Enlace copiado al portapapeles!'
+                    : '📋 Link copied to clipboard!');
             });
         }
 
-        // Logout
         function logout() {
             document.getElementById('loginCard').classList.remove('hidden');
             document.getElementById('dashboardCard').classList.add('hidden');
             document.getElementById('customerNumber').value = '';
+            document.getElementById('alertMessage').classList.remove('show');
         }
 
-        // Enter key support
         document.getElementById('customerNumber').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 checkStatus();
