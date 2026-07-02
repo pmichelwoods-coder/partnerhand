@@ -281,37 +281,38 @@
             }
         }
 
-        // Load pending payments
-        async function loadPendingPayments() {
-            try {
-                const response = await fetch(`${API_URL}/api/admin/pending-payments`);
-                const data = await response.json();
-                const container = document.getElementById('pendingPaymentsList');
-                
-                if (data.length === 0) {
-                    container.innerHTML = '<p style="color: #48bb78;">✅ No pending payments</p>';
-                    return;
-                }
-
-                container.innerHTML = data.map(item => `
-                    <div class="pending-item">
-                        <div class="pending-info">
-                            <strong>${item.full_name || item.customer_number}</strong>
-                            <small>Amount: RD$${item.amount.toLocaleString()}</small>
-                            <small>Customer: ${item.customer_number}</small>
-                            <small>Date: ${new Date(item.payment_date).toLocaleDateString()}</small>
-                        </div>
-                        <div class="pending-actions">
-                            <button class="approve-btn" onclick="processPayment('${item.customer_number}')">💰 Process Payment</button>
-                        </div>
-                    </div>
-                `).join('');
-            } catch (error) {
-                console.error('Error loading pending payments:', error);
-                document.getElementById('pendingPaymentsList').innerHTML = '<p style="color: #fc8181;">Error loading payments</p>';
-            }
+     // Load pending payments
+async function loadPendingPayments() {
+    try {
+        const response = await fetch(`${API_URL}/api/admin/pending-payments`);
+        const data = await response.json();
+        const container = document.getElementById('pendingPaymentsList');
+        
+        console.log('Pending payments data:', data); // Debug log
+        
+        if (!data || data.length === 0) {
+            container.innerHTML = '<p style="color: #48bb78;">✅ No pending payments</p>';
+            return;
         }
 
+        container.innerHTML = data.map(item => `
+            <div class="pending-item">
+                <div class="pending-info">
+                    <strong>${item.full_name || item.customer_number}</strong>
+                    <small>Amount: RD$${item.amount ? item.amount.toLocaleString() : '0'}</small>
+                    <small>Customer: ${item.customer_number}</small>
+                    <small>Date: ${item.payment_date ? new Date(item.payment_date).toLocaleDateString() : 'N/A'}</small>
+                </div>
+                <div class="pending-actions">
+                    <button class="approve-btn" onclick="processPayment('${item.customer_number}')">💰 Process Payment</button>
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Error loading pending payments:', error);
+        document.getElementById('pendingPaymentsList').innerHTML = '<p style="color: #fc8181;">Error loading payments</p>';
+    }
+}
         // Generate master link
         async function generateMasterLink() {
             try {

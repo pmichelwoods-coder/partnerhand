@@ -781,20 +781,30 @@ app.get('/api/admin/stats', async (req, res) => {
 app.get('/api/admin/pending-payments', async (req, res) => {
   try {
     db.all(
-      `SELECT p.*, pa.whatsapp_number, pa.full_name 
+      `SELECT 
+        p.id,
+        p.customer_number,
+        p.amount,
+        p.payment_date,
+        p.status,
+        p.processed_date,
+        pa.full_name,
+        pa.whatsapp_number
        FROM payments p 
-       JOIN partners pa ON p.customer_number = pa.customer_number 
+       LEFT JOIN partners pa ON p.customer_number = pa.customer_number 
        WHERE p.status = 'pending' 
        ORDER BY p.payment_date ASC`,
       (err, payments) => {
         if (err) {
-          console.error(err);
-          return res.status(500).json({ error: 'Server error' });
+          console.error('Pending payments error:', err);
+          return res.status(500).json({ error: 'Server error: ' + err.message });
         }
+        console.log('📊 Pending payments found:', payments ? payments.length : 0);
         res.json(payments || []);
       }
     );
   } catch (error) {
+    console.error('Pending payments catch error:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
