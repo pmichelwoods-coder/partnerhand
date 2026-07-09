@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Conecta Y Gana RD 5 Mil</title>
+    <style>
+        /* Reset and base */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #e8f0fe;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid #c0d0e0;
+            box-shadow: 0 8px 30px rgba(0,20,50,0.1);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #4a7aaa;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        .header h1 {
+            font-size: 24px;
+            color: #0a2a44;
+        }
+        .header .phone {
+            font-size: 14px;
+            color: #2a5a8c;
+            font-weight: 600;
+        }
+        .banner-gana {
+            background: #fff4e0;
+            border: 1px solid #f0d080;
+            border-radius: 12px;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .banner-gana h2 {
+            font-size: 20px;
+            color: #1a3a5a;
+        }
+        .banner-gana .highlight {
+            color: #c0392b;
+            font-size: 22px;
+        }
+        .banner-gana p {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a3a5a;
+        }
+
+        /* Stats cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .stat-card {
+            background: #f8faff;
+            border: 2px solid #4a7aaa;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+        }
+        .stat-card .number {
+            font-size: 28px;
+            font-weight: 700;
+            color: #0a2a44;
+        }
+        .stat-card .label {
+            font-size: 13px;
+            color: #2a5a8c;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        /* Info boxes */
+        .info-box {
+            background: #f0f6fe;
+            border: 2px solid #4a7aaa;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .info-box .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            font-size: 14px;
+            border-bottom: 1px dashed #c0d0e0;
+        }
+        .info-box .row:last-child {
+            border-bottom: none;
+        }
+        .info-box .label {
+            font-weight: 600;
+            color: #2a4a6a;
+        }
+        .info-box .value {
+            font-weight: 700;
+            color: #0a2a44;
+        }
+        .info-box .value.pending { color: #f39c12; }
+        .info-box .value.approved { color: #27ae60; }
+        .info-box .value.expired { color: #e74c3c; }
+
+        .referral-link {
+            background: #e8f0fe;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #4a7aaa;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 10px 0;
+        }
+        .referral-link input {
+            background: transparent;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            color: #0a2a44;
+            flex: 1;
+            outline: none;
+        }
+        .referral-link button {
+            background: #0f3460;
+            color: white;
+            border: none;
+            padding: 6px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .referral-link button:hover {
+            background: #1a2a4a;
+        }
+
+        /* Banking form */
+        .banking-form {
+            margin: 20px 0;
+        }
+        .banking-form .form-group {
+            margin-bottom: 12px;
+        }
+        .banking-form label {
+            display: block;
+            font-weight: 600;
+            color: #0a2a44;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+        .banking-form input, .banking-form select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #b0c8e0;
+            border-radius: 8px;
+            font-size: 14px;
+            background: #ffffff;
+        }
+        .banking-form input:focus, .banking-form select:focus {
+            border-color: #2a6a9a;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(42,106,154,0.15);
+        }
+        .btn {
+            background: #0f3460;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+        }
+        .btn:hover {
+            background: #1a2a4a;
+        }
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: none;
+        }
+        .message.success {
+            display: block;
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .message.error {
+            display: block;
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #6a7a8a;
+            border-top: 1px solid #c0d0e0;
+            padding-top: 15px;
+        }
+        .hidden { display: none; }
+
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .header { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <h1>📊 Conecta Y Gana RD 5 Mil</h1>
+        <span class="phone" id="userPhone">📱 Cargando...</span>
+    </div>
+
+    <!-- Banner -->
+    <div class="banner-gana">
+        <h2>💰 Gana <span class="highlight">RD$5,000</span></h2>
+        <p>📌 En tan solo 3 días o cada semana · ¡Referidos ilimitados!</p>
+    </div>
+
+    <!-- Status & Profile Info -->
+    <div class="info-box" id="profileBox">
+        <div class="row"><span class="label">👤 Nombre:</span><span class="value" id="userName">-</span></div>
+        <div class="row"><span class="label">📱 Teléfono:</span><span class="value" id="userPhoneDisplay">-</span></div>
+        <div class="row"><span class="label">📋 Estado:</span><span class="value" id="userStatus">-</span></div>
+        <div class="row"><span class="label">📅 Fecha de Registro:</span><span class="value" id="userCreated">-</span></div>
+        <div class="row"><span class="label">⏳ Días restantes:</span><span class="value" id="userDays">-</span></div>
+        <div class="row"><span class="label">🔑 Código de referido:</span><span class="value" id="userReferralCode">-</span></div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card"><div class="number" id="totalCustomers">0</div><div class="label">📊 Total Clientes</div></div>
+        <div class="stat-card"><div class="number" id="activeCustomers">0</div><div class="label">✅ Activos</div></div>
+        <div class="stat-card"><div class="number" id="pendingCustomers">0</div><div class="label">⏳ Pendientes</div></div>
+        <div class="stat-card"><div class="number" id="totalPaid">RD$0</div><div class="label">💰 Total Pagado</div></div>
+    </div>
+
+    <!-- Referral Link (only if approved) -->
+    <div id="referralSection" class="hidden">
+        <h3 style="color:#0a2a44; margin-bottom:10px;">🔗 Tu Enlace de Referido</h3>
+        <div class="referral-link">
+            <input type="text" id="referralLinkInput" readonly>
+            <button onclick="copyReferralLink()">📋 Copiar</button>
+        </div>
+        <p style="font-size:13px; color:#2a5a8c; margin:5px 0 15px;">
+            Comparte este enlace con tus amigos. Cada vez que alguien se registre con tu código, sumarás un cliente.
+        </p>
+    </div>
+
+    <!-- Banking Details Form -->
+    <h3 style="color:#0a2a44; margin-top:20px;">🏦 Datos Bancarios (para pagos)</h3>
+    <form id="bankingForm" class="banking-form">
+        <div class="form-group">
+            <label>Banco *</label>
+            <select id="bankName" required>
+                <option value="">Selecciona tu banco</option>
+                <option value="Banreserva">Banreserva</option>
+                <option value="Banco Popular">Banco Popular</option>
+                <option value="BHD León">BHD León</option>
+                <option value="Banco Santa Cruz">Banco Santa Cruz</option>
+                <option value="Otro">Otro</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Número de Cuenta *</label>
+            <input type="text" id="accountNumber" placeholder="Número de cuenta" required>
+        </div>
+        <div class="form-group">
+            <label>Tipo de Cuenta *</label>
+            <select id="accountType" required>
+                <option value="">Selecciona tipo</option>
+                <option value="Ahorros">Ahorros</option>
+                <option value="Corriente">Corriente</option>
+            </select>
+        </div>
+        <button type="submit" class="btn" id="saveBankingBtn">💾 Guardar Datos Bancarios</button>
+    </form>
+    <div id="bankingMessage" class="message"></div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <a href="/terms.html">📋 Términos y Condiciones</a> · 
+        <a href="/">🏠 Inicio</a> · 
+        <span>📱 +1 829 817 2104</span>
+    </div>
+</div>
+
+<script>
+    // ============================================================
+    // 1. Get phone from URL (or prompt)
+    // ============================================================
+    const urlParams = new URLSearchParams(window.location.search);
+    let phone = urlParams.get('phone');
+
+    if (!phone) {
+        phone = prompt('Ingresa tu número de WhatsApp (10 dígitos, sin código de país):');
+        if (!phone) {
+            document.body.innerHTML = '<p style="text-align:center; margin-top:50px;">❌ No se proporcionó número de teléfono. <a href="/">Volver al inicio</a></p>';
+            throw new Error('No phone provided');
+        }
+    }
+    const cleanPhone = phone.replace(/[^0-9]/g, '');
+    if (cleanPhone.length < 10) {
+        document.body.innerHTML = '<p style="text-align:center; margin-top:50px;">❌ Número inválido. <a href="/">Volver al inicio</a></p>';
+        throw new Error('Invalid phone');
+    }
+
+    // Display phone in header
+    document.getElementById('userPhone').textContent = '📱 ' + cleanPhone;
+
+    // ============================================================
+    // 2. Fetch user data
+    // ============================================================
+    async function loadDashboard() {
+        try {
+            const res = await fetch(`/api/user/${cleanPhone}`);
+            if (!res.ok) {
+                if (res.status === 404) {
+                    document.body.innerHTML = '<p style="text-align:center; margin-top:50px;">❌ Usuario no encontrado. <a href="/">Registrarse</a></p>';
+                    return;
+                }
+                throw new Error('Error al cargar datos');
+            }
+            const user = await res.json();
+
+            // Fill profile
+            document.getElementById('userName').textContent = user.name || '-';
+            document.getElementById('userPhoneDisplay').textContent = user.phone || '-';
+            let statusText = user.status || 'pending';
+            let statusClass = statusText;
+            if (statusText === 'pending') statusText = '⏳ Pendiente de Aprobación';
+            else if (statusText === 'approved') statusText = '✅ Aprobado';
+            else if (statusText === 'expired') statusText = '⏰ Expirado';
+            else if (statusText === 'rejected') statusText = '❌ Rechazado';
+            document.getElementById('userStatus').textContent = statusText;
+            document.getElementById('userStatus').className = 'value ' + (user.status || 'pending');
+
+            document.getElementById('userCreated').textContent = user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '-';
+            document.getElementById('userDays').textContent = user.daysRemaining !== null ? user.daysRemaining + ' días' : 'N/A';
+            document.getElementById('userReferralCode').textContent = user.referralCode || 'No asignado';
+
+            // Stats
+            document.getElementById('totalCustomers').textContent = user.totalCustomers || 0;
+            document.getElementById('activeCustomers').textContent = user.activeCustomers || 0;
+            document.getElementById('pendingCustomers').textContent = user.pendingCustomers || 0;
+            document.getElementById('totalPaid').textContent = 'RD$' + (user.totalPaid || 0);
+
+            // Show referral link if approved
+            if (user.status === 'approved' && user.referralCode) {
+                document.getElementById('referralSection').classList.remove('hidden');
+                const link = window.location.origin + '/?ref=' + user.referralCode;
+                document.getElementById('referralLinkInput').value = link;
+            }
+
+            // Pre-fill banking details if present
+            if (user.bankingDetails) {
+                document.getElementById('bankName').value = user.bankingDetails.bankName || '';
+                document.getElementById('accountNumber').value = user.bankingDetails.accountNumber || '';
+                document.getElementById('accountType').value = user.bankingDetails.accountType || '';
+            }
+
+        } catch (error) {
+            console.error(error);
+            document.body.innerHTML = '<p style="text-align:center; margin-top:50px;">❌ Error al cargar el dashboard. <a href="/">Volver al inicio</a></p>';
+        }
+    }
+
+    loadDashboard();
+
+    // ============================================================
+    // 3. Banking form submission
+    // ============================================================
+    document.getElementById('bankingForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const bankName = document.getElementById('bankName').value;
+        const accountNumber = document.getElementById('accountNumber').value.trim();
+        const accountType = document.getElementById('accountType').value;
+        const msgDiv = document.getElementById('bankingMessage');
+
+        if (!bankName || !accountNumber || !accountType) {
+            msgDiv.className = 'message error';
+            msgDiv.textContent = '❌ Todos los campos bancarios son obligatorios.';
+            return;
+        }
+
+        const btn = document.getElementById('saveBankingBtn');
+        btn.disabled = true;
+        btn.textContent = '⏳ Guardando...';
+        msgDiv.className = 'message';
+        msgDiv.textContent = '';
+
+        try {
+            const res = await fetch('/api/user/update-banking', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    phone: cleanPhone,
+                    bankName,
+                    accountNumber,
+                    accountType
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                msgDiv.className = 'message success';
+                msgDiv.textContent = '✅ Datos bancarios actualizados correctamente.';
+            } else {
+                throw new Error(data.error || 'Error al guardar');
+            }
+        } catch (error) {
+            msgDiv.className = 'message error';
+            msgDiv.textContent = '❌ ' + error.message;
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '💾 Guardar Datos Bancarios';
+        }
+    });
+
+    // ============================================================
+    // 4. Copy referral link
+    // ============================================================
+    function copyReferralLink() {
+        const input = document.getElementById('referralLinkInput');
+        input.select();
+        document.execCommand('copy');
+        alert('✅ Enlace copiado al portapapeles');
+    }
+</script>
+</body>
+</html>

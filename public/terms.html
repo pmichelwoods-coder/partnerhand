@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Términos y Condiciones - Conecta Y Gana RD 5 Mil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #0f3460;
+            padding-bottom: 20px;
+        }
+        .logo {
+            max-width: 150px;
+            margin: 0 auto 15px;
+            display: block;
+        }
+        h1 {
+            color: #1a1a2e;
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            color: #0f3460;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .language-toggle {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0 25px;
+        }
+        .lang-btn {
+            padding: 8px 25px;
+            border: 2px solid #0f3460;
+            background: transparent;
+            color: #0f3460;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .lang-btn:hover {
+            background: #0f3460;
+            color: white;
+        }
+        .lang-btn.active {
+            background: #0f3460;
+            color: white;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 25px;
+            background: #0f3460;
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            margin-bottom: 20px;
+            transition: background 0.3s;
+            font-weight: bold;
+        }
+        .back-btn:hover {
+            background: #1a1a2e;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 5px solid #0f3460;
+        }
+        .section h2 {
+            color: #0f3460;
+            font-size: 22px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section h2 .icon {
+            font-size: 28px;
+        }
+        .section p {
+            color: #333;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+        .section ul {
+            color: #333;
+            line-height: 1.8;
+            padding-left: 25px;
+        }
+        .section ul li {
+            margin-bottom: 8px;
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #ffc107;
+            margin: 15px 0;
+        }
+        .highlight-important {
+            background: #f8d7da;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #dc3545;
+            margin: 15px 0;
+        }
+        .highlight-success {
+            background: #d4edda;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #28a745;
+            margin: 15px 0;
+        }
+        .highlight-info {
+            background: #d1ecf1;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #17a2b8;
+            margin: 15px 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #ddd;
+            color: #888;
+            font-size: 14px;
+        }
+        .footer .version {
+            color: #666;
+            font-weight: bold;
+        }
+        .lang-content {
+            display: none;
+        }
+        .lang-content.active {
+            display: block;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            .section {
+                padding: 15px;
+            }
+            h1 {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <img src="/logo.png" alt="Conecta Y Gana RD 5 Mil" class="logo" onerror="this.style.display='none'">
+            <h1>Conecta Y Gana RD 5 Mil</h1>
+            <div class="subtitle">📋 Términos y Condiciones</div>
+        </div>
+
+        <!-- Back Button -->
+        <a href="/" class="back-btn">← Volver / Back</a>
+
+        <!-- Language Toggle -->
+        <div class="language-toggle">
+            <button class="lang-btn active" onclick="switchLanguage('es')">🇪🇸 Español</button>
+            <button class="lang-btn" onclick="switchLanguage('en')">🇺🇸 English</button>
+        </div>
+
+        <!-- SPANISH CONTENT -->
+        <div id="content-es" class="lang-content active">
+            <!-- Sección 1: Información Personal -->
+            <div class="section">
+                <h2><span class="icon">🔒</span> Información Personal</h2>
+                <p>Conecta Y Gana RD 5 Mil nunca te solicitará información personal más allá de:</p>
+                <ul>
+                    <li><strong>Nombre completo</strong> - Para identificación y registros</li>
+                    <li><strong>Número de WhatsApp</strong> - Para comunicaciones y notificaciones</li>
+                    <li><strong>Número de cuenta bancaria</strong> - Únicamente para procesar tus pagos</li>
+                </ul>
+                <div class="highlight">
+                    ⚠️ <strong>Importante:</strong> No compartimos tu información con terceros. Tus datos están seguros y solo se utilizan para el funcionamiento del programa.
+                </div>
+            </div>
+
+            <!-- Sección 2: Seguridad del Enlace de Referidos -->
+            <div class="section">
+                <h2><span class="icon">🔗</span> Seguridad del Enlace de Referidos</h2>
+                <p>Tu enlace de referidos es tu clave de acceso al programa. Debes:</p>
+                <ul>
+                    <li>Guardar tu enlace en un lugar seguro - Fuera de tu teléfono</li>
+                    <li>No compartirlo con personas no autorizadas</li>
+                    <li>Mantenerlo accesible en caso de que pierdas tu teléfono</li>
+                </ul>
+                <div class="highlight-important">
+                    📱 <strong>Importante:</strong> Si pierdes tu teléfono, necesitarás tu enlace de referidos para activar tu cuenta en un nuevo dispositivo. Sin tu enlace, no podremos verificar tu identidad.
+                </div>
+            </div>
+
+            <!-- Sección 3: Activación de Cuenta -->
+            <div class="section">
+                <h2><span class="icon">📱</span> Activación de Cuenta</h2>
+                <p>Tu número de cliente solo puede estar activo en un dispositivo a la vez. Esto es para:</p>
+                <ul>
+                    <li>Proteger tu cuenta contra accesos no autorizados</li>
+                    <li>Mantener la integridad del sistema de referidos</li>
+                    <li>Evitar duplicación de comisiones</li>
+                </ul>
+                <div class="highlight-info">
+                    🔑 <strong>Importante:</strong> Si cambias de dispositivo, deberás usar tu enlace de referidos para reactivar tu cuenta.
+                </div>
+            </div>
+
+            <!-- Sección 4: Transferencia de Referidos -->
+            <div class="section">
+                <h2><span class="icon">🔄</span> Transferencia de Referidos</h2>
+                <p>Si tienes 3 o más referidos activos y tu cuenta está por expirar:</p>
+                <ul>
+                    <li>Debes contactar al administrador entre 10 y 3 días antes de que expire tu cuenta</li>
+                    <li>Deberás pagar la cuota de activación para transferir tus referidos a tu nueva cuenta</li>
+                    <li>Si tu cuenta expira antes de reactivarla, perderás todos tus referidos</li>
+                </ul>
+                <div class="highlight-important">
+                    ⚠️ <strong>¡Atención!</strong> Si tu cuenta expira y no has reactivado, perderás todos tus referidos acumulados. No podremos recuperarlos.
+                </div>
+            </div>
+
+            <!-- Sección 5: Reactivación de Cuenta -->
+            <div class="section">
+                <h2><span class="icon">🔄</span> Reactivación de Cuenta</h2>
+                <p>Para reactivar tu cuenta después de la expiración:</p>
+                <ul>
+                    <li>Debes obtener un nuevo código de referido de uno de tus referidos</li>
+                    <li>Completar el proceso de registro nuevamente</li>
+                    <li>Pagar la cuota de activación</li>
+                </ul>
+                <div class="highlight-success">
+                    💡 <strong>Consejo:</strong> Mantén contacto con tus referidos para que puedan ayudarte a reactivar tu cuenta si es necesario.
+                </div>
+            </div>
+
+            <!-- Sección 6: Resumen -->
+            <div class="section" style="border-left-color: #28a745;">
+                <h2><span class="icon">📌</span> Resumen</h2>
+                <div class="highlight-success">
+                    <strong>📌 Puntos clave:</strong>
+                    <ul>
+                        <li>Tu enlace de referidos es tu identidad en el programa</li>
+                        <li>Guarda tu enlace en un lugar seguro</li>
+                        <li>Un dispositivo por cuenta</li>
+                        <li>Contacta al admin 10-3 días antes de expirar si tienes 3+ referidos</li>
+                        <li>Paga la cuota de activación para transferir tus referidos</li>
+                        <li>Si expiras sin reactivar, pierdes tus referidos</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- ENGLISH CONTENT -->
+        <div id="content-en" class="lang-content">
+            <!-- Section 1: Personal Information -->
+            <div class="section">
+                <h2><span class="icon">🔒</span> Personal Information</h2>
+                <p>Conecta Y Gana RD 5 Mil will never request personal information beyond:</p>
+                <ul>
+                    <li><strong>Full name</strong> - For identification and records</li>
+                    <li><strong>WhatsApp number</strong> - For communications and notifications</li>
+                    <li><strong>Bank account number</strong> - Only to process your payments</li>
+                </ul>
+                <div class="highlight">
+                    ⚠️ <strong>Important:</strong> We do not share your information with third parties. Your data is secure and only used for program operations.
+                </div>
+            </div>
+
+            <!-- Section 2: Referral Link Security -->
+            <div class="section">
+                <h2><span class="icon">🔗</span> Referral Link Security</h2>
+                <p>Your referral link is your key to accessing the program. You must:</p>
+                <ul>
+                    <li>Save your link in a secure place - Outside your phone</li>
+                    <li>Not share it with unauthorized persons</li>
+                    <li>Keep it accessible in case you lose your phone</li>
+                </ul>
+                <div class="highlight-important">
+                    📱 <strong>Important:</strong> If you lose your phone, you'll need your referral link to activate your account on a new device. Without your link, we cannot verify your identity.
+                </div>
+            </div>
+
+            <!-- Section 3: Account Activation -->
+            <div class="section">
+                <h2><span class="icon">📱</span> Account Activation</h2>
+                <p>Your customer number can only be active on one device at a time. This is to:</p>
+                <ul>
+                    <li>Protect your account from unauthorized access</li>
+                    <li>Maintain the integrity of the referral system</li>
+                    <li>Prevent duplication of commissions</li>
+                </ul>
+                <div class="highlight-info">
+                    🔑 <strong>Important:</strong> If you change devices, you must use your referral link to reactivate your account.
+                </div>
+            </div>
+
+            <!-- Section 4: Referral Transfer -->
+            <div class="section">
+                <h2><span class="icon">🔄</span> Referral Transfer</h2>
+                <p>If you have 3 or more active referrals and your account is about to expire:</p>
+                <ul>
+                    <li>You must contact the administrator 10 to 3 days before your account expires</li>
+                    <li>You must pay the activation fee to transfer your referrals to your new account</li>
+                    <li>If your account expires before reactivation, you will lose all your referrals</li>
+                </ul>
+                <div class="highlight-important">
+                    ⚠️ <strong>Attention!</strong> If your account expires and you haven't reactivated, you will lose all your accumulated referrals. We cannot recover them.
+                </div>
+            </div>
+
+            <!-- Section 5: Account Reactivation -->
+            <div class="section">
+                <h2><span class="icon">🔄</span> Account Reactivation</h2>
+                <p>To reactivate your account after expiration:</p>
+                <ul>
+                    <li>You must obtain a new referral code from one of your referrals</li>
+                    <li>Complete the registration process again</li>
+                    <li>Pay the activation fee</li>
+                </ul>
+                <div class="highlight-success">
+                    💡 <strong>Tip:</strong> Keep in touch with your referrals so they can help you reactivate your account if needed.
+                </div>
+            </div>
+
+            <!-- Section 6: Summary -->
+            <div class="section" style="border-left-color: #28a745;">
+                <h2><span class="icon">📌</span> Summary</h2>
+                <div class="highlight-success">
+                    <strong>📌 Key Points:</strong>
+                    <ul>
+                        <li>Your referral link is your identity in the program</li>
+                        <li>Save your link in a secure place</li>
+                        <li>One device per account</li>
+                        <li>Contact admin 10-3 days before expiring if you have 3+ referrals</li>
+                        <li>Pay the activation fee to transfer your referrals</li>
+                        <li>If you expire without reactivating, you lose your referrals</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>© 2026 Conecta Y Gana RD 5 Mil - Todos los derechos reservados / All rights reserved</p>
+            <p class="version">Versión 1.0 | Última actualización / Last updated: 2 de julio de 2026</p>
+        </div>
+    </div>
+
+    <script>
+        function switchLanguage(lang) {
+            // Hide all content
+            document.querySelectorAll('.lang-content').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            // Show selected language
+            if (lang === 'es') {
+                document.getElementById('content-es').classList.add('active');
+            } else {
+                document.getElementById('content-en').classList.add('active');
+            }
+            
+            // Update button styles
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Find the clicked button and make it active
+            const buttons = document.querySelectorAll('.lang-btn');
+            if (lang === 'es') {
+                buttons[0].classList.add('active');
+            } else {
+                buttons[1].classList.add('active');
+            }
+        }
+    </script>
+</body>
+</html>

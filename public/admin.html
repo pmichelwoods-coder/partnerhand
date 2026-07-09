@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Conecta Y Gana RD 5 Mil</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #e8f0fe;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid #c0d0e0;
+            box-shadow: 0 8px 30px rgba(0,20,50,0.1);
+        }
+        h1 {
+            color: #0a2a44;
+            border-bottom: 2px solid #4a7aaa;
+            padding-bottom: 12px;
+            margin-bottom: 25px;
+        }
+        .pending-list, .all-users {
+            margin-top: 30px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th {
+            background: #0a2a44;
+            color: white;
+            padding: 10px;
+            text-align: left;
+        }
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #e0e8f0;
+        }
+        tr:hover {
+            background: #f8faff;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 12px;
+        }
+        .status-pending { background: #f39c12; color: white; }
+        .status-approved { background: #27ae60; color: white; }
+        .status-rejected { background: #e74c3c; color: white; }
+        .status-expired { background: #95a5a6; color: white; }
+
+        .btn-approve {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 6px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .btn-reject {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 6px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .btn-approve:hover { background: #219a52; }
+        .btn-reject:hover { background: #c0392b; }
+
+        .btn-loading {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 10px;
+            margin: 15px 0;
+            display: none;
+        }
+        .message.success {
+            display: block;
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .message.error {
+            display: block;
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #6a7a8a;
+            border-top: 1px solid #c0d0e0;
+            padding-top: 15px;
+        }
+        .badge {
+            background: #f39c12;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 10px;
+            font-size: 12px;
+            margin-left: 8px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🛡️ Panel de Administración</h1>
+
+    <div id="message" class="message"></div>
+
+    <div class="pending-list">
+        <h2 style="color:#0a2a44;">⏳ Aprobaciones Pendientes <span id="pendingCount" class="badge">0</span></h2>
+        <table id="pendingTable">
+            <thead>
+                <tr><th>Nombre</th><th>Teléfono</th><th>Comprobante</th><th>Ref.</th><th>Fecha</th><th>Acción</th></tr>
+            </thead>
+            <tbody id="pendingBody">
+                <tr><td colspan="6" style="text-align:center; color:#888;">Cargando...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <hr style="margin: 30px 0; border-color: #c0d0e0;">
+
+    <div class="all-users">
+        <h2 style="color:#0a2a44;">📋 Todos los Usuarios</h2>
+        <table id="allUsersTable">
+            <thead>
+                <tr><th>Nombre</th><th>Teléfono</th><th>Estado</th><th>Ref. Code</th><th>Clientes</th><th>Expira</th></tr>
+            </thead>
+            <tbody id="allUsersBody">
+                <tr><td colspan="6" style="text-align:center; color:#888;">Cargando...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="footer">
+        <a href="/">🏠 Inicio</a> · <a href="/dashboard?phone=admin">📊 Dashboard</a>
+    </div>
+</div>
+
+<script>
+    // ============================================================
+    // 1. Load pending approvals
+    // ============================================================
+    async function loadPending() {
+        try {
+            const res = await fetch('/api/admin/pending');
+            const data = await res.json();
+            const users = data.users || [];
+            const tbody = document.getElementById('pendingBody');
+            const countSpan = document.getElementById('pendingCount');
+            countSpan.textContent = users.length;
+
+            if (users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#888;">No hay aprobaciones pendientes.</td></tr>';
+                return;
+            }
+
+            let html = '';
+            users.forEach(user => {
+                html += `<tr>
+                    <td><strong>${user.name}</strong></td>
+                    <td>${user.phone}</td>
+                    <td>${user.comprobante}</td>
+                    <td>${user.refereeCode || 'N/A'}</td>
+                    <td>${new Date(user.createdAt).toLocaleDateString()}</td>
+                    <td>
+                        <button class="btn-approve" onclick="approveUser('${user.id}')">✅ Aprobar</button>
+                        <button class="btn-reject" onclick="rejectUser('${user.id}')">❌ Rechazar</button>
+                    </td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+        } catch (error) {
+            console.error(error);
+            document.getElementById('pendingBody').innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Error al cargar pendientes</td></tr>';
+        }
+    }
+
+    // ============================================================
+    // 2. Approve / Reject actions
+    // ============================================================
+    async function approveUser(userId) {
+        if (!confirm('¿Aprobar este depósito?')) return;
+        await processAction(userId, 'approve');
+    }
+
+    async function rejectUser(userId) {
+        if (!confirm('¿Rechazar este depósito?')) return;
+        await processAction(userId, 'reject');
+    }
+
+    async function processAction(userId, action) {
+        const msgDiv = document.getElementById('message');
+        msgDiv.className = 'message';
+        msgDiv.textContent = '';
+        try {
+            const res = await fetch('/api/admin/approve-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId, action })
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                msgDiv.className = 'message success';
+                msgDiv.textContent = `✅ ${action === 'approve' ? 'Aprobado' : 'Rechazado'} exitosamente.`;
+                // Refresh both lists
+                loadPending();
+                loadAllUsers();
+            } else {
+                throw new Error(data.error || 'Error al procesar');
+            }
+        } catch (error) {
+            msgDiv.className = 'message error';
+            msgDiv.textContent = '❌ ' + error.message;
+        }
+    }
+
+    // ============================================================
+    // 3. Load all users (for reference)
+    // ============================================================
+    async function loadAllUsers() {
+        try {
+            const res = await fetch('/api/admin/users');
+            const data = await res.json();
+            const users = data.users || [];
+            const tbody = document.getElementById('allUsersBody');
+
+            if (users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#888;">No hay usuarios registrados.</td></tr>';
+                return;
+            }
+
+            let html = '';
+            users.forEach(user => {
+                const statusClass = user.status || 'pending';
+                const statusLabel = statusClass.charAt(0).toUpperCase() + statusClass.slice(1);
+                html += `<tr>
+                    <td><strong>${user.name}</strong></td>
+                    <td>${user.phone}</td>
+                    <td><span class="status-badge status-${statusClass}">${statusLabel}</span></td>
+                    <td>${user.referralCode || '-'}</td>
+                    <td>${user.totalCustomers || 0}</td>
+                    <td>${user.expiresAt ? new Date(user.expiresAt).toLocaleDateString() : '-'}</td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+        } catch (error) {
+            console.error(error);
+            document.getElementById('allUsersBody').innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Error al cargar usuarios</td></tr>';
+        }
+    }
+
+    // ============================================================
+    // 4. Initial load
+    // ============================================================
+    loadPending();
+    loadAllUsers();
+
+    // Refresh every 30 seconds (optional)
+    setInterval(() => {
+        loadPending();
+        loadAllUsers();
+    }, 30000);
+</script>
+</body>
+</html>
