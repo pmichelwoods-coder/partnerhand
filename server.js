@@ -638,6 +638,35 @@ app.get('/terms', (req, res) => {
 });
 
 // ============================================
+// TEST ENDPOINT (for manual testing)
+// ============================================
+app.post('/test-send', async (req, res) => {
+    const { to, text } = req.body;
+    if (!to || !text) {
+        return res.status(400).json({ error: 'Missing "to" or "text"' });
+    }
+    try {
+        const result = await sendWhatsAppMessage(to, text);
+        res.json({ success: true, result });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ============================================
+// WEBHOOK ENDPOINTS (for receiving messages and status updates)
+// ============================================
+app.post('/webhook/vonage/inbound', (req, res) => {
+    console.log('📩 Incoming WhatsApp:', req.body);
+    res.status(200).send('OK');
+});
+
+app.post('/webhook/vonage/status', (req, res) => {
+    console.log('📊 Status Update:', req.body);
+    res.status(200).send('OK');
+});
+
+// ============================================
 // START SERVER
 // ============================================
 app.listen(PORT, () => {
@@ -662,6 +691,9 @@ app.listen(PORT, () => {
     console.log(`   • GET  /api/admin/pending-payouts`);
     console.log(`   • POST /api/admin/create-payout`);
     console.log(`   • POST /api/admin/complete-payout`);
+    console.log(`   • POST /test-send (testing only)`);
+    console.log(`   • POST /webhook/vonage/inbound`);
+    console.log(`   • POST /webhook/vonage/status`);
     console.log(`   • GET  / -> signup page`);
     console.log(`   • GET  /dashboard`);
     console.log(`   • GET  /admin`);
