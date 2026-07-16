@@ -626,7 +626,35 @@ app.get('/', (req, res) => {
 });
 
 app.get('/dashboard', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+    const filePath = path.join(__dirname, 'public', 'dashboard.html');
+    res.sendFile(filePath, (err) => {
+        if (err) {
+            console.error('❌ Dashboard file missing, sending fallback');
+            res.send(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Dashboard - Conecta Y Gana RD</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #f0f2f5; }
+                        h1 { color: #1a73e8; }
+                        .card { background: white; padding: 30px; border-radius: 10px; max-width: 600px; margin: 0 auto; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+                    </style>
+                </head>
+                <body>
+                    <div class="card">
+                        <h1>📊 Conecta Y Gana RD</h1>
+                        <h2>Dashboard</h2>
+                        <p>Welcome to your dashboard.</p>
+                        <p>If you're seeing this, <code>dashboard.html</code> is missing from the <code>public/</code> folder.</p>
+                        <p>Please add the file and redeploy.</p>
+                        <p><a href="/">⬅️ Back to Home</a></p>
+                    </div>
+                </body>
+                </html>
+            `);
+        }
+    });
 });
 
 app.get('/admin', (req, res) => {
