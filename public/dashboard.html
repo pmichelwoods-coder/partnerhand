@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Conecta Y Gana RD</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            margin: 20px 0;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #e8eaed;
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+        }
+        .header h1 {
+            color: #1a73e8;
+            font-size: 28px;
+        }
+        .header p {
+            color: #5f6368;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .stat-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid #e8eaed;
+        }
+        .stat-card .number {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1a73e8;
+        }
+        .stat-card .label {
+            font-size: 12px;
+            color: #5f6368;
+            margin-top: 5px;
+        }
+        .section {
+            margin-top: 25px;
+            border-top: 1px solid #e8eaed;
+            padding-top: 20px;
+        }
+        .section h3 {
+            font-size: 18px;
+            color: #202124;
+            margin-bottom: 15px;
+        }
+        .referral-link-box {
+            background: #f8f9fa;
+            border: 1px dashed #dadce0;
+            border-radius: 8px;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .referral-link-box input {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px;
+            border: 1px solid #dadce0;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+        }
+        .btn {
+            background: #1a73e8;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        .btn:hover {
+            background: #1557b0;
+        }
+        .btn-secondary {
+            background: #e8eaed;
+            color: #202124;
+        }
+        .btn-secondary:hover {
+            background: #dadce0;
+        }
+        .btn-success {
+            background: #1e8e3e;
+        }
+        .btn-success:hover {
+            background: #166b30;
+        }
+        .table-wrap {
+            overflow-x: auto;
+            margin-top: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th, td {
+            padding: 12px 10px;
+            text-align: left;
+            border-bottom: 1px solid #e8eaed;
+        }
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #5f6368;
+        }
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .status-pending { background: #fef7e0; color: #ea8600; }
+        .status-approved { background: #e6f4ea; color: #1e8e3e; }
+        .status-rejected { background: #fce8e6; color: #d93025; }
+        .status-completed { background: #e3f2fd; color: #1a73e8; }
+        .hidden { display: none; }
+        .error-msg {
+            background: #fce8e6;
+            color: #d93025;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .success-msg {
+            background: #e6f4ea;
+            color: #1e8e3e;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #5f6368;
+        }
+        .banking-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 10px;
+        }
+        .banking-form input, .banking-form select {
+            padding: 10px;
+            border: 1px solid #dadce0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .banking-form .full-width {
+            grid-column: 1 / -1;
+        }
+        .footer-links {
+            margin-top: 20px;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .footer-links a {
+            color: #1a73e8;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .banking-form { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="app">
+        <!-- Loading State -->
+        <div id="loading" class="loading">
+            <h2>⏳ Cargando tu dashboard...</h2>
+            <p style="color:#9aa0a6;">Por favor espera un momento</p>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div id="dashboard-content" class="hidden">
+            <div class="header">
+                <h1>📊 Conecta Y Gana RD</h1>
+                <p id="user-name">Bienvenido, <strong>Cargando...</strong></p>
+            </div>
+
+            <!-- Error / Success Messages -->
+            <div id="message-area"></div>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="number" id="stat-status">-</div>
+                    <div class="label">Estado</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="stat-referrals">0</div>
+                    <div class="label">Total Referidos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="stat-active">0</div>
+                    <div class="label">Activos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="stat-earnings">RD$0</div>
+                    <div class="label">Ganancias Totales</div>
+                </div>
+            </div>
+
+            <!-- Referral Link -->
+            <div class="section">
+                <h3>🔗 Tu enlace de referido</h3>
+                <div class="referral-link-box">
+                    <input type="text" id="referral-link" readonly>
+                    <button class="btn" onclick="copyReferralLink()">📋 Copiar</button>
+                </div>
+            </div>
+
+            <!-- Referrals List -->
+            <div class="section">
+                <h3>👥 Tus referidos</h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Teléfono</th>
+                                <th>Estado</th>
+                                <th>Fecha</th>
+                            </tr>
+                        </thead>
+                        <tbody id="referrals-table">
+                            <tr><td colspan="4" style="text-align:center; color:#9aa0a6;">No hay referidos aún</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Payouts -->
+            <div class="section">
+                <h3>💰 Pagos</h3>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Hito</th>
+                                <th>Monto</th>
+                                <th>Estado</th>
+                                <th>Fecha</th>
+                            </tr>
+                        </thead>
+                        <tbody id="payouts-table">
+                            <tr><td colspan="4" style="text-align:center; color:#9aa0a6;">No hay pagos aún</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Banking Details -->
+            <div class="section">
+                <h3>🏦 Datos Bancarios</h3>
+                <form id="banking-form" onsubmit="updateBanking(event)">
+                    <div class="banking-form">
+                        <input type="text" id="bank-name" placeholder="Banco (ej: BHD)" required>
+                        <input type="text" id="account-number" placeholder="Número de cuenta" required>
+                        <select id="account-type" required>
+                            <option value="">Tipo de cuenta</option>
+                            <option value="corriente">Corriente</option>
+                            <option value="ahorros">Ahorros</option>
+                        </select>
+                        <input type="hidden" id="banking-phone">
+                        <button type="submit" class="btn btn-success full-width">💾 Guardar datos bancarios</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Footer Links -->
+            <div class="footer-links">
+                <a href="/">🏠 Inicio</a>
+                <a href="/admin">🛠️ Admin</a>
+                <a href="/terms">📜 Términos</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =============================================
+        // CONFIGURATION
+        // =============================================
+        const API_BASE = ''; // Relative URL
+        const PHONE_KEY = 'dashboard_phone';
+
+        // =============================================
+        // DOM REFS
+        // =============================================
+        const loading = document.getElementById('loading');
+        const content = document.getElementById('dashboard-content');
+        const msgArea = document.getElementById('message-area');
+        const userName = document.getElementById('user-name');
+        const statStatus = document.getElementById('stat-status');
+        const statReferrals = document.getElementById('stat-referrals');
+        const statActive = document.getElementById('stat-active');
+        const statEarnings = document.getElementById('stat-earnings');
+        const referralLink = document.getElementById('referral-link');
+        const referralsTable = document.getElementById('referrals-table');
+        const payoutsTable = document.getElementById('payouts-table');
+        const bankingForm = document.getElementById('banking-form');
+        const bankName = document.getElementById('bank-name');
+        const accountNumber = document.getElementById('account-number');
+        const accountType = document.getElementById('account-type');
+        const bankingPhone = document.getElementById('banking-phone');
+
+        // =============================================
+        // HELPERS
+        // =============================================
+        function showMessage(text, type) {
+            msgArea.innerHTML = `<div class="${type}-msg">${text}</div>`;
+            setTimeout(() => { msgArea.innerHTML = ''; }, 6000);
+        }
+
+        function getStatusBadge(status) {
+            const map = {
+                'pending': 'status-pending',
+                'approved': 'status-approved',
+                'rejected': 'status-rejected',
+                'completed': 'status-completed'
+            };
+            return `<span class="status-badge ${map[status] || ''}">${status.toUpperCase()}</span>`;
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('es-DO');
+        }
+
+        function getPhone() {
+            return localStorage.getItem(PHONE_KEY) || '';
+        }
+
+        function savePhone(phone) {
+            localStorage.setItem(PHONE_KEY, phone);
+        }
+
+        // =============================================
+        // LOAD DASHBOARD DATA
+        // =============================================
+        async function loadDashboard(phone) {
+            try {
+                // 1. Get user data
+                const userRes = await fetch(`${API_BASE}/api/user/${phone}`);
+                if (!userRes.ok) {
+                    if (userRes.status === 404) {
+                        showMessage('Usuario no encontrado. Verifica tu número.', 'error');
+                        content.classList.add('hidden');
+                        loading.classList.add('hidden');
+                        return;
+                    }
+                    throw new Error(`HTTP ${userRes.status}`);
+                }
+                const user = await userRes.json();
+
+                // 2. Get referrals
+                const refRes = await fetch(`${API_BASE}/api/user/${phone}/referrals`);
+                const referrals = refRes.ok ? await refRes.json() : { referrals: [] };
+
+                // 3. Get payouts
+                const payRes = await fetch(`${API_BASE}/api/user/${phone}/payouts`);
+                const payouts = payRes.ok ? await payRes.json() : { payouts: [] };
+
+                // 4. Render data
+                renderDashboard(user, referrals, payouts);
+
+            } catch (error) {
+                console.error('Dashboard error:', error);
+                showMessage('Error al cargar el dashboard. Intenta de nuevo.', 'error');
+                content.classList.add('hidden');
+                loading.classList.add('hidden');
+            }
+        }
+
+        // =============================================
+        // RENDER DASHBOARD
+        // =============================================
+        function renderDashboard(user, referrals, payouts) {
+            // Header
+            userName.innerHTML = `Bienvenido, <strong>${user.name || 'Usuario'}</strong> (${user.phone})`;
+
+            // Stats
+            const statusMap = { 'pending': '⏳ Pendiente', 'approved': '✅ Aprobado', 'rejected': '❌ Rechazado' };
+            statStatus.textContent = statusMap[user.status] || user.status || '-';
+            statReferrals.textContent = user.totalCustomers || 0;
+            statActive.textContent = user.activeCustomers || 0;
+            statEarnings.textContent = `RD$${user.totalPaid || 0}`;
+
+            // Referral Link
+            const baseUrl = window.location.origin;
+            const code = user.referralCode || '';
+            referralLink.value = code ? `${baseUrl}/?ref=${code}` : '⚠️ No tienes código de referido (espera aprobación)';
+
+            // Referrals Table
+            const refList = referrals.referrals || [];
+            if (refList.length === 0) {
+                referralsTable.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#9aa0a6;">No hay referidos aún</td></tr>`;
+            } else {
+                referralsTable.innerHTML = refList.map(r => `
+                    <tr>
+                        <td>${r.name || '-'}</td>
+                        <td>${r.phone || '-'}</td>
+                        <td>${getStatusBadge(r.status)}</td>
+                        <td>${formatDate(r.createdAt)}</td>
+                    </tr>
+                `).join('');
+            }
+
+            // Payouts Table
+            const payList = payouts.payouts || [];
+            if (payList.length === 0) {
+                payoutsTable.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#9aa0a6;">No hay pagos aún</td></tr>`;
+            } else {
+                payoutsTable.innerHTML = payList.map(p => `
+                    <tr>
+                        <td>${p.milestone || '-'}</td>
+                        <td>RD$${p.amount || 0}</td>
+                        <td>${getStatusBadge(p.status)}</td>
+                        <td>${formatDate(p.createdAt)}</td>
+                    </tr>
+                `).join('');
+            }
+
+            // Banking Details
+            if (user.bankingDetails) {
+                bankName.value = user.bankingDetails.bankName || '';
+                accountNumber.value = user.bankingDetails.accountNumber || '';
+                accountType.value = user.bankingDetails.accountType || '';
+            }
+            bankingPhone.value = user.phone;
+
+            // Show content
+            loading.classList.add('hidden');
+            content.classList.remove('hidden');
+
+            savePhone(user.phone);
+        }
+
+        // =============================================
+        // COPY REFERRAL LINK
+        // =============================================
+        function copyReferralLink() {
+            const input = document.getElementById('referral-link');
+            if (!input.value || input.value.includes('⚠️')) {
+                showMessage('No hay enlace para copiar aún.', 'error');
+                return;
+            }
+            navigator.clipboard.writeText(input.value).then(() => {
+                showMessage('✅ Enlace copiado al portapapeles!', 'success');
+            }).catch(() => {
+                input.select();
+                document.execCommand('copy');
+                showMessage('✅ Enlace copiado!', 'success');
+            });
+        }
+
+        // =============================================
+        // UPDATE BANKING
+        // =============================================
+        async function updateBanking(event) {
+            event.preventDefault();
+
+            const phone = bankingPhone.value;
+            const bank = bankName.value.trim();
+            const account = accountNumber.value.trim();
+            const type = accountType.value;
+
+            if (!phone) {
+                showMessage('Error: No se encontró tu número.', 'error');
+                return;
+            }
+            if (!bank || !account || !type) {
+                showMessage('Por favor, completa todos los campos bancarios.', 'error');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/api/user/update-banking`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, bankName: bank, accountNumber: account, accountType: type })
+                });
+
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    showMessage('✅ Datos bancarios guardados correctamente.', 'success');
+                } else {
+                    showMessage('❌ Error: ' + (data.error || 'No se pudieron guardar los datos.'), 'error');
+                }
+            } catch (error) {
+                console.error('Banking update error:', error);
+                showMessage('❌ Error de conexión. Intenta de nuevo.', 'error');
+            }
+        }
+
+        // =============================================
+        // INIT
+        // =============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            // Try to get phone from URL or localStorage
+            const params = new URLSearchParams(window.location.search);
+            let phone = params.get('phone') || getPhone();
+
+            if (!phone) {
+                // Prompt user for their phone number
+                const userPhone = prompt('📱 Ingresa tu número de WhatsApp (ej: 8299251967):');
+                if (userPhone) {
+                    const clean = userPhone.replace(/\D/g, '');
+                    if (clean.length >= 8) {
+                        phone = clean;
+                        savePhone(phone);
+                    } else {
+                        showMessage('❌ Número inválido. Por favor, inténtalo de nuevo.', 'error');
+                        loading.classList.add('hidden');
+                        return;
+                    }
+                } else {
+                    loading.classList.add('hidden');
+                    content.innerHTML = `
+                        <div class="error-msg" style="text-align:center; padding:30px;">
+                            <h3>🔒 Acceso requerido</h3>
+                            <p>Por favor, ingresa tu número de WhatsApp para ver tu dashboard.</p>
+                            <button class="btn" onclick="location.reload()">Intentar de nuevo</button>
+                        </div>
+                    `;
+                    return;
+                }
+            }
+
+            if (phone) {
+                loadDashboard(phone);
+            }
+        });
+    </script>
+
+</body>
+</html>
