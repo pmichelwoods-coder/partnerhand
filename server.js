@@ -1,4 +1,4 @@
-// server.js – Telegram Integration (Full Version)
+// server.js – Telegram Integration (Full Version with update-user)
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -18,7 +18,7 @@ const PORT = process.env.PORT || 5001;
 // TELEGRAM CONFIG
 // ============================================
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const DEFAULT_CHAT_ID = process.env.TELEGRAM_DEFAULT_CHAT_ID; // Admin chat ID for testing
+const DEFAULT_CHAT_ID = process.env.TELEGRAM_DEFAULT_CHAT_ID;
 const SKIP_TELEGRAM = process.env.SKIP_TELEGRAM === 'true' ? true : false;
 
 // ============================================
@@ -107,7 +107,6 @@ async function sendTelegramMessage(chatId, text) {
 
 // ============================================
 // SEND NOTIFICATION TO USER (by phone)
-// Looks up the user's telegramChatId, or falls back to DEFAULT_CHAT_ID
 // ============================================
 async function sendNotification(phone, message) {
     const db = readDB();
@@ -118,7 +117,6 @@ async function sendNotification(phone, message) {
         chatId = user.telegramChatId;
     } else {
         console.log(`⚠️ No telegramChatId for ${phone}, sending to admin (${DEFAULT_CHAT_ID})`);
-        // Prefix the message so admin knows who it's for
         message = `📱 For ${phone}:\n\n${message}`;
     }
 
@@ -140,35 +138,28 @@ app.get('/api/health', (req, res) => {
 });
 
 // ============================================
-// ADMIN: UPDATE USER PHONE NUMBER
+// REGISTER USER
 // ============================================
-app.post('/api/admin/update-user', async (req, res) => {
+app.post('/api/register', async (req, res) => {
     try {
-        const { userId, phone } = req.body;
-        if (!userId || !phone) {
-            return res.status(400).json({ error: 'userId and phone are required' });
+        const { phone, name, comprobante, refereeCode, telegramChatId } = req.body;
+        const email = req.body.email || `user_${Date.now()}@temp.com`;
+
+        if (!phone || !name || !comprobante) {
+            return res.status(400).json({ error: 'Todos los campos son requeridos' });
+        }
+        if (!/^\d{8,}$/.test(comprobante)) {
+            return res.status(400).json({ error: 'El comprobante debe tener 8 o más dígitos numéricos' });
         }
 
         const db = readDB();
-        const user = db.users.find(u => u.id === userId);
-        if (!user) {
-            return res.status(404).json({ error: 'Usuario no encontrado' });
+        if (db.users.some(u => u.phone === phone)) {
+            return res.status(400).json({ error: 'Este número ya está registrado' });
+        }
+        if (db.users.some(u => u.comprobante === comprobante)) {
+            return res.status(400).json({ error: 'Este comprobante ya ha sido utilizado' });
         }
 
-        // Check if phone already exists for another user
-        if (db.users.some(u => u.phone === phone && u.id !== userId)) {
-            return res.status(400).json({ error: 'Este número ya está registrado por otro usuario' });
-        }
-
-        user.phone = phone;
-        writeDB(db);
-
-        res.json({ success: true, message: 'Número actualizado correctamente', user });
-    } catch (error) {
-        console.error('Update user error:', error);
-        res.status(500).json({ error: 'Error al actualizar el usuario' });
-    }
-});
         const newUser = {
             id: shortid.generate(),
             phone,
@@ -178,7 +169,7 @@ app.post('/api/admin/update-user', async (req, res) => {
             refereeCode: refereeCode || null,
             status: 'pending',
             referralCode: null,
-            telegramChatId: telegramChatId || null, // NEW FIELD
+            telegramChatId: telegramChatId || null,
             createdAt: new Date().toISOString(),
             approvedAt: null,
             expiresAt: null,
@@ -201,7 +192,6 @@ app.post('/api/admin/update-user', async (req, res) => {
             }
         }
 
-        // Send Telegram notification to the new user
         await sendNotification(phone,
             `📋 Hola ${name}, hemos recibido tu depósito de RD 1,250.\n\n` +
             `🔍 Tu comprobante #${comprobante} está en revisión.\n` +
@@ -357,6 +347,36 @@ app.post('/api/admin/approve-payment', async (req, res) => {
 });
 
 // ============================================
+// ADMIN: UPDATE USER PHONE NUMBER
+// ============================================
+app.post('/api/admin/update-user', async (req, res) => {
+    try {
+        const { userId, phone } = req.body;
+        if (!userId || !phone) {
+            return res.status(400).json({ error: 'userId and phone are required' });
+        }
+
+        const db = readDB();
+        const user = db.users.find(u => u.id === userId);
+        if (!user) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+
+        if (db.users.some(u => u.phone === phone && u.id !== userId)) {
+            return res.status(400).json({ error: 'Este número ya está registrado por otro usuario' });
+        }
+
+        user.phone = phone;
+        writeDB(db);
+
+        res.json({ success: true, message: 'Número actualizado correctamente', user });
+    } catch (error) {
+        console.error('Update user error:', error);
+        res.status(500).json({ error: 'Error al actualizar el usuario' });
+    }
+});
+
+// ============================================
 // USER DASHBOARD
 // ============================================
 app.get('/api/user/:phone', (req, res) => {
@@ -389,7 +409,7 @@ app.get('/api/user/:phone', (req, res) => {
 });
 
 // ============================================
-// UPDATE TELEGRAM CHAT ID (for users to link their account)
+// UPDATE TELEGRAM CHAT ID
 // ============================================
 app.post('/api/user/update-telegram', async (req, res) => {
     try {
@@ -691,8 +711,9 @@ app.listen(PORT, () => {
     console.log('📋 Available endpoints:');
     console.log(`   • POST /api/register`);
     console.log(`   • POST /api/admin/approve-payment`);
+    console.log(`   • POST /api/admin/update-user (NEW)`);
     console.log(`   • GET  /api/user/:phone`);
-    console.log(`   • POST /api/user/update-telegram (link Telegram)`);
+    console.log(`   • POST /api/user/update-telegram`);
     console.log(`   • GET  /api/admin/pending`);
     console.log(`   • GET  /api/admin/users`);
     console.log(`   • GET  /api/admin/pending-payouts`);
