@@ -1,4 +1,6 @@
-// server.js – Telegram Integration (Full Version with update-user)
+// server.js - v3.0 - 2026-07-20
+// Conecta Y Gana RD - Telegram Notifications + Admin Features
+
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -22,13 +24,13 @@ const DEFAULT_CHAT_ID = process.env.TELEGRAM_DEFAULT_CHAT_ID;
 const SKIP_TELEGRAM = process.env.SKIP_TELEGRAM === 'true' ? true : false;
 
 // ============================================
-// OLD CONFIG (kept for compatibility)
+// OLD CONFIG (kept for compatibility, not used)
 // ============================================
 const PROJECT_NAME = process.env.PROJECT_NAME || 'Conecta Y Gana RD 5 Mil';
 const DB_FILE = path.join(__dirname, 'database.json');
 
 // ============================================
-// DATABASE HELPERS
+// DATABASE HELPERS (JSON file – persistent across restarts but not across redeploys)
 // ============================================
 function readDB() {
     try {
@@ -192,6 +194,7 @@ app.post('/api/register', async (req, res) => {
             }
         }
 
+        // Send Telegram notification to the new user
         await sendNotification(phone,
             `📋 Hola ${name}, hemos recibido tu depósito de RD 1,250.\n\n` +
             `🔍 Tu comprobante #${comprobante} está en revisión.\n` +
@@ -373,6 +376,53 @@ app.post('/api/admin/update-user', async (req, res) => {
     } catch (error) {
         console.error('Update user error:', error);
         res.status(500).json({ error: 'Error al actualizar el usuario' });
+    }
+});
+
+// ============================================
+// ADMIN: UPDATE USER'S REFEREE CODE
+// ============================================
+app.post('/api/admin/update-referee', async (req, res) => {
+    try {
+        const { userId, refereeCode } = req.body;
+        if (!userId || !refereeCode) {
+            return res.status(400).json({ error: 'userId and refereeCode are required' });
+        }
+
+        const db = readDB();
+        const user = db.users.find(u => u.id === userId);
+        if (!user) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+
+        // Verify that the referee code exists (optional)
+        const refereeExists = db.users.some(u => u.referralCode === refereeCode && u.status === 'approved');
+        if (!refereeExists) {
+            return res.status(400).json({ error: 'El código de referido no existe o no está aprobado' });
+        }
+
+        user.refereeCode = refereeCode;
+        writeDB(db);
+
+        res.json({ success: true, message: 'Código de referido actualizado', user });
+    } catch (error) {
+        console.error('Update referee error:', error);
+        res.status(500).json({ error: 'Error al actualizar código de referido' });
+    }
+});
+
+// ============================================
+// ADMIN: GET USER BY ID
+// ============================================
+app.get('/api/admin/user/:id', (req, res) => {
+    try {
+        const { id } = req.params;
+        const db = readDB();
+        const user = db.users.find(u => u.id === id);
+        if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 });
 
@@ -711,9 +761,13 @@ app.listen(PORT, () => {
     console.log('📋 Available endpoints:');
     console.log(`   • POST /api/register`);
     console.log(`   • POST /api/admin/approve-payment`);
-    console.log(`   • POST /api/admin/update-user (NEW)`);
+    console.log(`   • POST /api/admin/update-user`);
+    console.log(`   • POST /api/admin/update-referee (NEW)`);
+    console.log(`   • GET  /api/admin/user/:id (NEW)`);
     console.log(`   • GET  /api/user/:phone`);
     console.log(`   • POST /api/user/update-telegram`);
+    console.log(`   • GET  /api/user/:phone/referrals`);
+    console.log(`   • GET  /api/user/:phone/payouts`);
     console.log(`   • GET  /api/admin/pending`);
     console.log(`   • GET  /api/admin/users`);
     console.log(`   • GET  /api/admin/pending-payouts`);
