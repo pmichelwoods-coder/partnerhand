@@ -87,7 +87,7 @@
     </div>
 
     <script>
-        // v2.2 - 2026-07-20 - Better error handling
+        // v2.2 - 2026-07-21 - No phone normalization
         const API_BASE = '';
         const PHONE_KEY = 'dashboard_phone';
 
@@ -99,15 +99,8 @@
         function getPhone() {
             return localStorage.getItem(PHONE_KEY) || '';
         }
-
         function savePhone(p) {
             localStorage.setItem(PHONE_KEY, p);
-        }
-
-        function normalizePhone(phone) {
-            const cleaned = phone.replace(/\D/g, '');
-            if (cleaned.length === 10) return '1' + cleaned;
-            return cleaned;
         }
 
         function showError(message) {
@@ -127,16 +120,11 @@
                 loading.classList.remove('hidden');
                 content.classList.add('hidden');
 
-                console.log('📡 Fetching user data for:', phone);
-
                 const userRes = await fetch(`${API_BASE}/api/user/${phone}`);
-                console.log('📡 Response status:', userRes.status);
-
                 if (!userRes.ok) {
                     if (userRes.status === 404) {
                         const msg = 'Usuario no encontrado. Registrate primero.';
                         alert(msg);
-                        // Preserve referral code from URL if any
                         const urlParams = new URLSearchParams(window.location.search);
                         const ref = urlParams.get('ref') || '';
                         const redirectUrl = ref ? `/?ref=${ref}` : '/';
@@ -147,22 +135,16 @@
                 }
 
                 const user = await userRes.json();
-                console.log('✅ User data:', user);
-
-                // Get referrals
                 const refRes = await fetch(`${API_BASE}/api/user/${phone}/referrals`);
                 const referrals = refRes.ok ? await refRes.json() : { referrals: [] };
-
-                // Get payouts
                 const payRes = await fetch(`${API_BASE}/api/user/${phone}/payouts`);
                 const payouts = payRes.ok ? await payRes.json() : { payouts: [] };
 
                 renderDashboard(user, referrals, payouts);
                 loading.classList.add('hidden');
                 content.classList.remove('hidden');
-
             } catch (err) {
-                console.error('❌ Dashboard error:', err);
+                console.error('Dashboard error:', err);
                 showError('Error al cargar el dashboard: ' + err.message);
                 loading.classList.add('hidden');
             }
@@ -170,7 +152,6 @@
 
         function renderDashboard(user, referrals, payouts) {
             userName.innerHTML = `👋 Bienvenido, <strong>${user.name || 'Usuario'}</strong>`;
-
             document.getElementById('stat-total').textContent = user.totalCustomers || 0;
             document.getElementById('stat-active').textContent = user.activeCustomers || 0;
             document.getElementById('stat-pending').textContent = user.pendingCustomers || 0;
@@ -180,7 +161,6 @@
             const code = user.referralCode || '';
             document.getElementById('referral-link').value = code ? `${baseUrl}/?ref=${code}` : '⚠️ Sin código aún';
 
-            // Referrals
             const refList = referrals.referrals || [];
             const refTbody = document.getElementById('referrals-list');
             if (refList.length === 0) {
@@ -191,7 +171,6 @@
                 `).join('');
             }
 
-            // Payouts
             const payList = payouts.payouts || [];
             const payTbody = document.getElementById('payouts-list');
             if (payList.length === 0) {
@@ -202,7 +181,6 @@
                 `).join('');
             }
 
-            // Banking
             if (user.bankingDetails) {
                 document.getElementById('bank-name').value = user.bankingDetails.bankName || '';
                 document.getElementById('account-number').value = user.bankingDetails.accountNumber || '';
@@ -228,14 +206,8 @@
             const accountNumber = document.getElementById('account-number').value.trim();
             const accountType = document.getElementById('account-type').value;
 
-            if (!phone) {
-                alert('No se encontró tu número. Recarga la página.');
-                return;
-            }
-            if (!bankName || !accountNumber || !accountType) {
-                alert('Completa todos los campos bancarios.');
-                return;
-            }
+            if (!phone) { alert('No se encontró tu número. Recarga la página.'); return; }
+            if (!bankName || !accountNumber || !accountType) { alert('Completa todos los campos bancarios.'); return; }
 
             try {
                 const res = await fetch(`${API_BASE}/api/user/update-banking`, {
@@ -257,12 +229,10 @@
             const params = new URLSearchParams(window.location.search);
             let phone = params.get('phone') || getPhone();
 
-            console.log('📱 Phone from URL/storage:', phone);
-
             if (!phone) {
-                const userPhone = prompt('📱 Ingresa tu número de Telegram (ej: 8498634889):');
+                const userPhone = prompt('📱 Ingresa tu número de teléfono (ej: 8498634889):');
                 if (userPhone) {
-                    phone = normalizePhone(userPhone);
+                    phone = userPhone.replace(/\D/g, ''); // only digits, no country code
                     savePhone(phone);
                 } else {
                     window.location.href = '/';
